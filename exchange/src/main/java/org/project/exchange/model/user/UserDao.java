@@ -9,11 +9,11 @@ import java.util.List;
 
 @Service
 public class UserDao {
-    @Autowired
+    @Autowired//필드 인젝션이라 개별로인거 아는데 포스팅 그대로 따라가느라 이케 함 나중에 생성자 주입으로 바꿀게여
     private UserRepository repository;
 
-    public void save(User user) {
-        repository.save(user);
+    public User save(User user) {
+        return repository.save(user);// repository함수가 자동으로 해줌
     }
 
     public List<User> getAllUSers(){
@@ -22,10 +22,7 @@ public class UserDao {
 
         return users;
     }
-    public void delete(User user){
-        repository.delete(user);
-    }
-    public void deleteByid(int id){
+    public void delete(int id){
         repository.deleteById(id);
     }
 }

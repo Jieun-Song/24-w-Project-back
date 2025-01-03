@@ -13,7 +13,7 @@ class ExchangeApplicationTests {
 
     @Autowired
     private UserDao userDao;
-//    @Test
+    @Test
     void contextLoads() {
         User user = new User();
         user.setName("test");
@@ -27,11 +27,11 @@ class ExchangeApplicationTests {
         userDao.save(user);
     }
 
-    @Test
+//    @Test
     void getALlUserAndDeleteThe(){
         List<User> users = userDao.getAllUSers();
         for (User user : users){
-            userDao.delete(user);
+//            userDao.delete(user);
         }
 
     }
