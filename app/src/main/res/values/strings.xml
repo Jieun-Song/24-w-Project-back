@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">spring-mysql_ex</string>
+    <string name="form_name">name</string>
+    <string name="form_password">password</string>
+    <string name="form_gender">gender</string>
+    <string name="form_age">age</string>
+    <string name="button_save_user">save</string>
+    <string name="form_phonenum">phone_num</string>
+    <string name="form_email">email</string>
+    <string name="form_username">username</string>
+    <string name="form_birthdate">birth date</string>
+</resources>

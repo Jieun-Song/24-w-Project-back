@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App theme extending from Theme.AppCompat -->
+    <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- 앱에 맞게 커스터마이징할 수 있습니다. -->
+    </style>
+</resources>
