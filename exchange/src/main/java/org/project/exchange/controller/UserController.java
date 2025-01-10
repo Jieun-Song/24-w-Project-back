@@ -1,28 +1,80 @@
 package org.project.exchange.controller;
 
-import org.project.exchange.model.user.User;
-import org.project.exchange.model.user.UserDao;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import lombok.RequiredArgsConstructor;
 
-import java.util.List;
+import java.util.Map;
 
+import org.project.exchange.global.api.ApiResponse;
+import org.project.exchange.model.user.Dto.SignInRequest;
+import org.project.exchange.model.user.Dto.SignInResponse;
+import org.project.exchange.model.user.Dto.SignUpRequest;
+import org.project.exchange.model.user.Dto.SignUpResponse;
+import org.project.exchange.model.user.service.UserService;
+
+
+@RequiredArgsConstructor
 @RestController
+@RequestMapping("/api/auth")
 public class UserController {
-    @Autowired
-    private UserDao userDao;
+    private final UserService userService;
 
-    @GetMapping("/user/get-all") // 나중에서 android에서 요청할 때
-    public List<User> getAllUsers(){
-        return userDao.getAllUSers();
+    @PostMapping("/signup")
+    public ResponseEntity<ApiResponse<SignUpResponse>> signUp(@Validated @RequestBody SignUpRequest request,
+            BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body((ApiResponse<SignUpResponse>) ApiResponse.createFail(bindingResult));
+        }
+
+        SignUpResponse response = userService.signUp(request);
+        if (response.getMsg().equals("회원가입 성공")) {
+            return ResponseEntity.ok(ApiResponse.createSuccess(response));
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body((ApiResponse<SignUpResponse>) ApiResponse.createError(response.getMsg()));
     }
 
-    //android에서 새로운 정보를 입력받는다면
-    @PostMapping("/user/save")
-    public User save(@RequestBody User user){
-        return userDao.save(user);
+    @PostMapping("/signin")
+    public ResponseEntity<ApiResponse<SignInResponse>> signIn(@Validated @RequestBody SignInRequest request,
+            BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body((ApiResponse<SignInResponse>) ApiResponse.createFail(bindingResult));
+        }
+
+        SignInResponse response = userService.signIn(request);
+        if (response.getMsg().equals("로그인 성공")) {
+            return ResponseEntity.ok(ApiResponse.createSuccess(response));
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body((ApiResponse<SignInResponse>) ApiResponse.createError(response.getMsg()));
     }
+
+    @PostMapping("/signout")
+    public ResponseEntity<ApiResponse<String>> signOut(@RequestBody Map<String, String> request)
+            throws JsonProcessingException {
+        String token = request.get("token");
+        String response = userService.signOut(token);
+        if (response.equals("로그아웃 성공")) {
+            return ResponseEntity.ok(ApiResponse.createSuccess(response));
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body((ApiResponse<String>) ApiResponse.createError(response));
+    }
+
+    // @GetMapping("/kakao/signin")
+    // public ResponseEntity<?> kakaoSignIn(@RequestParam String code) {
+    //     System.out.println("Kakao SignIn endpoint hit with code: " + code);
+    //     SignInResponse response = userService.kakaoSignIn(code);
+    //     if (response.getMsg().equals("카카오 로그인 성공")) {
+    //         return ResponseEntity.ok(ApiResponse.createSuccess(response));
+    //     }
+    //     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.createError(response.getMsg()));
+    // }
 }
