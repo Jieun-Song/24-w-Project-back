@@ -9,9 +9,6 @@ import org.project.exchange.model.user.User;
 import org.project.exchange.model.user.repository.RefreshTokenRepository;
 import org.project.exchange.model.user.repository.UserRepository;
 import org.project.exchange.config.TokenProvider;
-// import org.project.exchange.model.user.KakaoUser;
-// import org.project.exchange.model.user.repository.KakaoUserRepository;
-// import org.project.exchange.model.user.service.KakaoService;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,10 +27,10 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    // private final KakaoUserRepository kakaoUserRepository;
     private final PasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
-    // private final KakaoUserRepository kakaoUserRepository;
-    // private final kakaoService KakaoService;
+    // private final kakaoService kakaoService;
 
     @Transactional
     public SignUpResponse signUp(SignUpRequest request) {

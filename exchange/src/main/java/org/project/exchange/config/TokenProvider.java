@@ -1,8 +1,5 @@
 package org.project.exchange.config;
 
-import org.project.exchange.model.user.User;
-import org.project.exchange.model.user.repository.RefreshTokenRepository;
-
 import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.sql.Timestamp;
@@ -19,8 +16,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import org.project.exchange.model.user.RefreshToken;
+import org.project.exchange.model.user.User;
+import org.project.exchange.model.user.repository.RefreshTokenRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -30,7 +28,6 @@ import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.RequiredArgsConstructor;
-
 
 @PropertySource("classpath:jwt.yml")
 @Service
