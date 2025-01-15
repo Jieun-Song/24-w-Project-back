@@ -15,8 +15,8 @@ public class Permission {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false) // 권한 ID
-    private Long id;
+    @Column(name = "permission_id", nullable = false) // 권한 ID
+    private Long permissionId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false) // 사용자 ID
@@ -29,8 +29,8 @@ public class Permission {
     private String status;
 
     @Builder
-    public Permission(Long id, User user, String type, String status) {
-        this.id = id;
+    public Permission(Long permissionId, User user, String type, String status) {
+        this.permissionId = permissionId;
         this.user = user;
         this.type = type;
         this.status = status;

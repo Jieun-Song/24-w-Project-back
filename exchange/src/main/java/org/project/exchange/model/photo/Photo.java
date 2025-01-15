@@ -15,8 +15,8 @@ public class Photo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false) // 사진 ID
-    private Long id;
+    @Column(name = "photo_id", nullable = false) // 사진 ID
+    private Long photoId;
 
     @Column(name = "location", nullable = false, length = 255) // 사진 저장 경로
     private String location;
@@ -25,8 +25,8 @@ public class Photo {
     private Product product; // 연결된 상품
 
     @Builder
-    public Photo(Long id, String location, Product product) {
-        this.id = id;
+    public Photo(Long photoId, String location, Product product) {
+        this.photoId = photoId;
         this.location = location;
         this.product = product;
     }
