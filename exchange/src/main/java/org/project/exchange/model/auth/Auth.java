@@ -1,27 +1,34 @@
 package org.project.exchange.model.auth;
 
-import jakarta.persistence.*;
-import lombok.*;
 import org.project.exchange.model.user.User;
+import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
-@Builder
+@Getter
 @Entity
-@Table(name = "인증")
+@Table(name = "auth") // 인증 테이블
 public class Auth {
 
     @Id
-    @Column(name = "인증_id", length = 255)
-    private String authId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false) // 인증 ID
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "회원_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false) // 사용자 ID
     private User user;
 
-    @Column(name = "인증_type", length = 255)
-    private String authType;
+    @Column(name = "type", nullable = false, length = 50) // 인증 유형
+    private String type;
 
-    @Column(name = "인증_field", length = 255)
-    private String authField;
+    @Builder
+    public Auth(Long id, User user, String type) {
+        this.id = id;
+        this.user = user;
+        this.type = type;
+    }
 }

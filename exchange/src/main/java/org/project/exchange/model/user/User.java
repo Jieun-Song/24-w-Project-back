@@ -15,6 +15,15 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.OneToMany;
+import org.project.exchange.model.auth.Auth;
+import org.project.exchange.model.auth.Permission;
+import org.project.exchange.model.auth.SystemLog;
+import org.project.exchange.model.list.Lists;
+
+
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
@@ -52,6 +61,19 @@ public class User {
 
     @Column(name = "user_updated_at", nullable = false)
     private Date userUpdatedAt; // 수정일시
+
+    // Relationships
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Auth> auths; // 인증 정보
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Permission> permissions; // 권한 정보
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SystemLog> systemLogs; // 시스템 로그
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Lists> lists; // 사용자가 생성한 리스트들
 
     @Builder(toBuilder = true)
     public User(Long userId, String userName, Date userDateOfBirth, String userPhoneNumber,

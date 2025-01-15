@@ -1,43 +1,52 @@
 package org.project.exchange.model.product;
 
+import jakarta.persistence.*;
+import lombok.*;
 import org.project.exchange.model.currency.Currency;
 import org.project.exchange.model.list.Lists;
 import org.project.exchange.model.photo.Photo;
-import jakarta.persistence.*;
-import lombok.*;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
-@Builder
+@Getter
 @Entity
-@Table(name = "상품정보")
+@Table(name = "product") // 상품 정보 테이블
 public class Product {
 
     @Id
-    @Column(name = "상품정보_id", length = 255)
-    private String productId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false) // 상품 ID
+    private Long id;
+
+    @Column(name = "name", nullable = false, length = 100) // 상품 이름
+    private String name;
+
+    @Column(name = "origin_price", nullable = false) // 원래 가격
+    private Double originPrice;
+
+    @Column(name = "converted_price", nullable = false) // 변환된 가격
+    private Double convertedPrice;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "리스트_id", nullable = false)
+    @JoinColumn(name = "list_id") // 리스트 ID
     private Lists list;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "통화_id", nullable = false)
+    @JoinColumn(name = "currency_id") // 통화 ID
     private Currency currency;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "사진_id", nullable = false)
+    @JoinColumn(name = "photo_id") // 사진 ID
     private Photo photo;
 
-    @Column(name = "상품정보_name", length = 255)
-    private String name;
-
-    @Column(name = "상품정보_origin_price", length = 255)
-    private String originPrice;
-
-    @Column(name = "상품정보_converted_price", length = 255)
-    private String convertedPrice;
-
-    @Column(name = "상품정보_exchange_rate", length = 255)
-    private String exchangeRate;
+    @Builder
+    public Product(Long id, String name, Double originPrice, Double convertedPrice, Lists list, Currency currency,
+            Photo photo) {
+        this.id = id;
+        this.name = name;
+        this.originPrice = originPrice;
+        this.convertedPrice = convertedPrice;
+        this.list = list;
+        this.currency = currency;
+        this.photo = photo;
+    }
 }

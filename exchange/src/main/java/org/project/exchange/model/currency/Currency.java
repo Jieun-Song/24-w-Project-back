@@ -1,28 +1,35 @@
 package org.project.exchange.model.currency;
 
-import org.project.exchange.model.product.Product;
-
 import jakarta.persistence.*;
 import lombok.*;
-import java.util.List ;
+import org.project.exchange.model.product.Product;
+
+import java.util.List;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
-@Builder
+@Getter
 @Entity
-@Table(name = "통화")
+@Table(name = "currency")
 public class Currency {
 
     @Id
-    @Column(name = "통화_id", length = 255)
-    private String currencyId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Long id;
 
-    @Column(name = "통화_code", length = 255)
+    @Column(name = "code", nullable = false, length = 10)
     private String code;
 
-    @Column(name = "통화_exchange_rate", length = 255)
-    private String exchangeRate;
+    @Column(name = "exchange_rate", nullable = false)
+    private Double exchangeRate;
 
-    @OneToMany(mappedBy = "currency", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "currency", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Product> products;
+
+    @Builder
+    public Currency(Long id, String code, Double exchangeRate) {
+        this.id = id;
+        this.code = code;
+        this.exchangeRate = exchangeRate;
+    }
 }
