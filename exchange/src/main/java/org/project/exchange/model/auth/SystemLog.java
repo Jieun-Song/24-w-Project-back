@@ -17,8 +17,8 @@ public class SystemLog {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false) // 로그 ID
-    private Long id;
+    @Column(name = "sl_id", nullable = false) // 로그 ID
+    private Long slId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false) // 사용자 ID
@@ -31,8 +31,8 @@ public class SystemLog {
     private Timestamp timestamp;
 
     @Builder
-    public SystemLog(Long id, User user, String action, Timestamp timestamp) {
-        this.id = id;
+    public SystemLog(Long slId, User user, String action, Timestamp timestamp) {
+        this.slId = slId;
         this.user = user;
         this.action = action;
         this.timestamp = timestamp;

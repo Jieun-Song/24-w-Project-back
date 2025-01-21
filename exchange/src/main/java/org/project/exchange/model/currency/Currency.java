@@ -14,8 +14,8 @@ public class Currency {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
-    private Long id;
+    @Column(name = "currency_id", nullable = false)
+    private Long currencyId;
 
     @Column(name = "code", nullable = false, length = 10)
     private String code;
@@ -27,8 +27,8 @@ public class Currency {
     private List<Product> products;
 
     @Builder
-    public Currency(Long id, String code, Double exchangeRate) {
-        this.id = id;
+    public Currency(Long currencyId, String code, Double exchangeRate) {
+        this.currencyId = currencyId;
         this.code = code;
         this.exchangeRate = exchangeRate;
     }

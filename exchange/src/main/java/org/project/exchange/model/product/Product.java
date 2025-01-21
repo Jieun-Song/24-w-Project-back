@@ -14,8 +14,8 @@ public class Product {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false) // 상품 ID
-    private Long id;
+    @Column(name = "product_id", nullable = false) // 상품 ID
+    private Long productId;
 
     @Column(name = "name", nullable = false, length = 100) // 상품 이름
     private String name;
@@ -39,9 +39,9 @@ public class Product {
     private Photo photo;
 
     @Builder
-    public Product(Long id, String name, Double originPrice, Double convertedPrice, Lists list, Currency currency,
+    public Product(Long productId, String name, Double originPrice, Double convertedPrice, Lists list, Currency currency,
             Photo photo) {
-        this.id = id;
+        this.productId = productId;
         this.name = name;
         this.originPrice = originPrice;
         this.convertedPrice = convertedPrice;

@@ -18,8 +18,8 @@ public class Lists {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false) // 리스트 ID
-    private Long id;
+    @Column(name = "list_id", nullable = false) // 리스트 ID
+    private Long listId;
 
     @Column(name = "name", nullable = false, length = 100) // 리스트 이름
     private String name;
@@ -32,8 +32,8 @@ public class Lists {
     private User user;
 
     @Builder
-    public Lists(Long id, String name, List<Product> products, User user) {
-        this.id = id;
+    public Lists(Long listId, String name, List<Product> products, User user) {
+        this.listId = listId;
         this.name = name;
         this.products = products;
         this.user = user;
