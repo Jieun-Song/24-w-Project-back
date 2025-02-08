@@ -8,11 +8,11 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public class SignOutRequest {
 
-    private String userUsername;
+    private String userEmail;
 
     @Builder
-    public SignOutRequest(String userUsername) {
-        this.userUsername = userUsername;
+    public SignOutRequest(String userEmail) {
+        this.userEmail = userEmail;
     }
 
 }

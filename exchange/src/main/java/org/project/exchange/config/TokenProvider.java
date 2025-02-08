@@ -53,7 +53,7 @@ public class TokenProvider {
     }
 
     public String createToken(User user) {
-        String userSpecification = user.getUserId() + ":" + user.getUserUsername();
+        String userSpecification = user.getUserId() + ":" + user.getUserEmail();
         return Jwts.builder()
                 .signWith(new SecretKeySpec(secretKey.getBytes(), SignatureAlgorithm.HS512.getJcaName()))
                 .setSubject(userSpecification) // JWT 토큰 제목에 사용자 ID와 사용자명 포함
