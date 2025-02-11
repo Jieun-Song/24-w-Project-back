@@ -1,5 +1,6 @@
 package org.project.exchange.model.product;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.project.exchange.model.currency.Currency;
@@ -28,10 +29,12 @@ public class Product {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "list_id") // 리스트 ID
+    @JsonIgnore
     private Lists lists;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "currency_id") // 통화 ID
+    @JsonIgnore
     private Currency currency;
 
     @Builder

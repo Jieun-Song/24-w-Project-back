@@ -51,7 +51,7 @@ public class ProductService {
 
         product.setName(requestDto.getName());
         product.setOriginPrice(requestDto.getOriginPrice());
-        product.setConvertedPrice(requestDto.getConvertedPrice());
+        product.setConvertedPrice(requestDto.getOriginPrice());
 
         Lists lists = listsRepository.findById(requestDto.getListId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 리스트가 존재하지 않습니다."));

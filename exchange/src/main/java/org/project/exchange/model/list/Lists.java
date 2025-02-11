@@ -1,6 +1,7 @@
 package org.project.exchange.model.list;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -26,6 +27,7 @@ public class Lists {
     private String name;
 
     @OneToMany(mappedBy = "lists", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Product> products; // 해당 리스트의 상품들
 
     @ManyToOne(fetch = FetchType.LAZY)
