@@ -21,9 +21,7 @@ public class ListsController {
 
     @PostMapping("/add")
     public ResponseEntity<Lists> createList(@RequestBody ListsRequestDto requestDto) {
-        System.out.println("Received request to create list: " + requestDto.getName());
         Lists newLists = listsService.createList(requestDto);
-        System.out.println("Created new list with ID: " + newLists.getListId());
         return ResponseEntity.status(HttpStatus.CREATED).body(newLists);
     }
 

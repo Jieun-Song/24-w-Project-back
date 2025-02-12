@@ -1,0 +1,8 @@
+
+Ð
+java:S1130ˆ"‹Remove the declaration of thrown exception 'com.fasterxml.jackson.core.JsonProcessingException', as it cannot be thrown from method's body.(ÙÙõÇ8Ÿ’éŸÏ2J$9b2afbb9-5d7f-422f-8e39-18ece61d4993
+^	java:S125š"<This block of commented-out lines of code should be removed.(¢Œ§®ÿÿÿÿÿ8ÓÓ‘ Ï2
+‰
+java:S1128"FRemove this unused import 'org.project.exchange.model.user.KakaoUser'.(‰‘ÝÃ8—¹Ž Ï2J$ad72dfb9-f658-45bb-8eee-7237f495465d
+M
+java:S1128"0Remove this unused import 'java.util.ArrayList'.(÷‰îƒ8ÔÓ‘ Ï2
