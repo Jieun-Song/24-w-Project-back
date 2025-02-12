@@ -1,6 +1,5 @@
 package org.project.exchange.model.product.Dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.project.exchange.model.currency.Currency;
@@ -14,6 +13,13 @@ public class ProductRequestDto {
     private Double originPrice;
     private Long listId;
     private Long currencyId;
+
+    public ProductRequestDto(String name, Double originPrice, Long listId, Long currencyId) {
+        this.name = name;
+        this.originPrice = originPrice;
+        this.listId = listId;
+        this.currencyId = currencyId;
+    }
 
     public Product toEntity(Lists lists, Currency currency) {
         double currencyRate = currency.getDealBasR();

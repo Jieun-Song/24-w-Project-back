@@ -14,25 +14,26 @@ public class Currency {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "currencyId", nullable = false)
+    @Column(name = "currency_id", nullable = false)
     private Long currencyId;
 
-    @Column(name = "curUnit", nullable = false, length = 10)
+    @Column(name = "cur_unit", nullable = false, length = 10)
     private String curUnit;
 
-    @Column(name = "dealBasR", nullable = false)
+    @Column(name = "deal_das_r", nullable = false)
     private Double dealBasR;
 
-    @Column(name = "curNm", nullable = false)
+    @Column(name = "cur_nm", nullable = false)
     private String curNm;
 
     @OneToMany(mappedBy = "currency", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Product> products;
 
     @Builder
-    public Currency(String curUnit, Double dealBasR, String curNm) {
+    public Currency(String curUnit, Double dealBasR, String curNm, List<Product> products) {
         this.curUnit = curUnit;
         this.dealBasR = dealBasR;
         this.curNm = curNm;
+        this.products = products;
     }
 }
