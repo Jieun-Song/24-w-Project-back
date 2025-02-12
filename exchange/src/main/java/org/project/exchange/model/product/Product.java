@@ -27,6 +27,9 @@ public class Product {
     @Column(name = "converted_price", nullable = false) // 변환된 가격
     private Double convertedPrice;
 
+    @Column(name = "currency_rate", nullable = false)
+    private Double currencyRate;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "list_id") // 리스트 ID
     @JsonIgnore
@@ -38,11 +41,13 @@ public class Product {
     private Currency currency;
 
     @Builder
-    public Product(String name, Double originPrice, Double convertedPrice, Lists lists, Currency currency) {
+    public Product(String name, Double originPrice, Double convertedPrice, Double currencyRate, Lists lists, Currency currency) {
         this.name = name;
         this.originPrice = originPrice;
         this.convertedPrice = convertedPrice;
+        this.currencyRate = currencyRate;
         this.lists = lists;
         this.currency = currency;
+
     }
 }

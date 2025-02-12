@@ -16,10 +16,12 @@ public class ProductRequestDto {
     private Long currencyId;
 
     public Product toEntity(Lists lists, Currency currency) {
+        double currencyRate = currency.getDealBasR();
         return Product.builder()
                 .name(this.name)
                 .originPrice(this.originPrice)
-                .convertedPrice(this.originPrice)
+                .convertedPrice(this.originPrice/1000*currencyRate)
+                .currencyRate(currencyRate)
                 .lists(lists)
                 .currency(currency)
                 .build();
