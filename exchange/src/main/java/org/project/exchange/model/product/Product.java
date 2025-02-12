@@ -1,5 +1,6 @@
 package org.project.exchange.model.product;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.project.exchange.model.currency.Currency;
@@ -26,20 +27,27 @@ public class Product {
     @Column(name = "converted_price", nullable = false) // 변환된 가격
     private Double convertedPrice;
 
+    @Column(name = "currency_rate", nullable = false)
+    private Double currencyRate;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "list_id") // 리스트 ID
+    @JsonIgnore
     private Lists lists;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "currency_id") // 통화 ID
+    @JsonIgnore
     private Currency currency;
 
     @Builder
-    public Product(String name, Double originPrice, Double convertedPrice, Lists lists, Currency currency) {
+    public Product(String name, Double originPrice, Double convertedPrice, Double currencyRate, Lists lists, Currency currency) {
         this.name = name;
         this.originPrice = originPrice;
         this.convertedPrice = convertedPrice;
+        this.currencyRate = currencyRate;
         this.lists = lists;
         this.currency = currency;
+
     }
 }
