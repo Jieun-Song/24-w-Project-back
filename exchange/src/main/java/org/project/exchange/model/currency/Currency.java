@@ -25,15 +25,10 @@ public class Currency {
 
     @Column(name = "cur_nm", nullable = false)
     private String curNm;
-
-    @OneToMany(mappedBy = "currency", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Product> products;
-
     @Builder
-    public Currency(String curUnit, Double dealBasR, String curNm, List<Product> products) {
+    public Currency(String curUnit, Double dealBasR, String curNm) {
         this.curUnit = curUnit;
         this.dealBasR = dealBasR;
         this.curNm = curNm;
-        this.products = products;
     }
 }

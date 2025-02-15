@@ -1,6 +1,8 @@
 package org.project.exchange.model.list.service;
 
 import lombok.RequiredArgsConstructor;
+import org.project.exchange.model.currency.Currency;
+import org.project.exchange.model.currency.repository.CurrencyRepository;
 import org.project.exchange.model.list.Dto.ListsRequestDto;
 import org.project.exchange.model.list.Dto.ListsResponseDto;
 import org.project.exchange.model.list.Lists;
@@ -19,25 +21,24 @@ import java.util.stream.Collectors;
 public class ListsService {
     private final ListsRepository listsRepository;
     private final UserRepository userRepository;
-    /**
-     * List 구현해야 할것
-     * 1. 모든 리스트 보여주기
-     * 2. 리스트 생성
-     * 3. 리스트 삭제
-     */
-
+    private final CurrencyRepository currencyRepository;
     public List<ListsResponseDto> showAllLists() {
         return listsRepository.findAll()
                 .stream()
                 .map(ListsResponseDto::new)
                 .collect(Collectors.toList());
     }
-
     public Lists createList(ListsRequestDto requestDto) {
         User user = userRepository.findByUserId(requestDto.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
-        Lists newLists = requestDto.toEntity(user);
+        Currency currency = currencyRepository.findById(requestDto.getCurrencyId())
+                .orElseThrow(() -> new IllegalArgumentException("해당 통화가 존재하지 않습니다."));
+        Lists newLists = requestDto.toEntity(user, currency);
         return listsRepository.save(newLists);
     }
-    public void deleteList(Long id) {listsRepository.deleteById(id);}
+    public void deleteList(Long id) {
+        Lists lists = listsRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("해당 리스트가 존재하지 않습니다."));
+        lists.setDeletedYn(true);
+    }
 }

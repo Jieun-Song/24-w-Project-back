@@ -39,29 +39,18 @@ public class ProductService {
     public Product save(ProductRequestDto requestDto) {
         Lists lists = listsRepository.findById(requestDto.getListId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 리스트가 존재하지 않습니다."));
-        Currency currency = currencyRepository.findById(requestDto.getCurrencyId())
-                .orElseThrow(() -> new IllegalArgumentException("해당 통화가 존재하지 않습니다."));
-
-        Product product = requestDto.toEntity(lists, currency);
+        Product product = requestDto.toEntity(lists);
         productRepository.save(product);
         return product;
     }
     public Product update(Long productId, ProductRequestDto requestDto) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("상품이 존재하지 않습니다."));
-        Optional<Currency> myCurrency = currencyRepository.findById(requestDto.getCurrencyId());
         product.setName(requestDto.getName());
         product.setOriginPrice(requestDto.getOriginPrice());
         Lists lists = listsRepository.findById(requestDto.getListId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 리스트가 존재하지 않습니다."));
-        Currency currency = currencyRepository.findById(requestDto.getCurrencyId())
-                .orElseThrow(() -> new IllegalArgumentException("해당 통화가 존재하지 않습니다."));
-
-        product.setConvertedPrice(requestDto.getOriginPrice()/1000 * myCurrency.get().getDealBasR());
-
         product.setLists(lists);
-        product.setCurrency(currency);
-
         productRepository.save(product);
         return product;
     }
