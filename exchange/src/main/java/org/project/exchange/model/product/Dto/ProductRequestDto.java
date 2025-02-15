@@ -12,24 +12,18 @@ public class ProductRequestDto {
     private String name;
     private Double originPrice;
     private Long listId;
-    private Long currencyId;
 
-    public ProductRequestDto(String name, Double originPrice, Long listId, Long currencyId) {
+    public ProductRequestDto(String name, Double originPrice, Long listId) {
         this.name = name;
         this.originPrice = originPrice;
         this.listId = listId;
-        this.currencyId = currencyId;
     }
 
-    public Product toEntity(Lists lists, Currency currency) {
-        double currencyRate = currency.getDealBasR();
+    public Product toEntity(Lists lists) {
         return Product.builder()
                 .name(this.name)
                 .originPrice(this.originPrice)
-                .convertedPrice(this.originPrice/1000*currencyRate)
-                .currencyRate(currencyRate)
                 .lists(lists)
-                .currency(currency)
                 .build();
     }
 }
