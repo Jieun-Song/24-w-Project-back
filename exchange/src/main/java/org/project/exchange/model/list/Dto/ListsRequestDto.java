@@ -7,6 +7,8 @@ import org.project.exchange.model.currency.Currency;
 import org.project.exchange.model.list.Lists;
 import org.project.exchange.model.user.User;
 
+import java.time.LocalDateTime;
+
 @Getter
 @NoArgsConstructor
 @Slf4j
@@ -14,12 +16,14 @@ public class ListsRequestDto {
     private String name;
     private Long userId;  // 사용자 ID
     private Long currencyId; // 통화 ID
+    private LocalDateTime now;
     private String location; // 위치
 
-    public Lists toEntity(User user, Currency currency) {
+    public Lists toEntity(User user, Currency currency, LocalDateTime now) {
         return Lists.builder()
                 .name(this.name)
                 .location(this.location)
+                .createdAt(now)
                 .currency(currency)
                 .user(user)
                 .build();

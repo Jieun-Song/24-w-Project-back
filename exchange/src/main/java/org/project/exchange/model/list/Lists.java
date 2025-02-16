@@ -11,6 +11,7 @@ import org.project.exchange.model.currency.Currency;
 import org.project.exchange.model.product.Product;
 import org.project.exchange.model.user.User;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +27,9 @@ public class Lists {
 
     @Column(name = "name", nullable = false, length = 100) // 리스트 이름
     private String name;
+
+    @Column(name = "created_at", nullable = false) // 생성 일자+시간
+    private LocalDateTime createdAt;
 
     @Column(name = "location", nullable = false) // 위치
     private String location;
@@ -48,8 +52,9 @@ public class Lists {
     private Currency currency;
 
     @Builder
-    public Lists(String name, String location, User user, Currency currency) {
+    public Lists(String name, LocalDateTime createdAt, String location, User user, Currency currency) {
         this.name = name;
+        this.createdAt = createdAt;
         this.location = location;
         this.products = new ArrayList<>();
         this.user = user;

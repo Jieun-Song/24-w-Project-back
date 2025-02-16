@@ -12,6 +12,7 @@ import org.project.exchange.model.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,7 +34,8 @@ public class ListsService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
         Currency currency = currencyRepository.findById(requestDto.getCurrencyId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 통화가 존재하지 않습니다."));
-        Lists newLists = requestDto.toEntity(user, currency);
+        LocalDateTime now = LocalDateTime.now();
+        Lists newLists = requestDto.toEntity(user, currency, now);
         return listsRepository.save(newLists);
     }
     public void deleteList(Long id) {
