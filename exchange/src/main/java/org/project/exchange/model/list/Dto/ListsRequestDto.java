@@ -19,7 +19,7 @@ public class ListsRequestDto {
     private LocalDateTime now;
     private String location; // 위치
 
-    public Lists toEntity(User user, Currency currency, LocalDateTime now) {
+    public Lists toEntity(String name, User user, Currency currency, LocalDateTime now) {
         return Lists.builder()
                 .name(name)
                 .location(this.location)
