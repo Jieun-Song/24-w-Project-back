@@ -2,7 +2,6 @@ package org.project.exchange.model.product.Dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.project.exchange.model.currency.Currency;
 import org.project.exchange.model.list.Lists;
 import org.project.exchange.model.product.Product;
 
@@ -19,9 +18,9 @@ public class ProductRequestDto {
         this.listId = listId;
     }
 
-    public Product toEntity(Lists lists) {
+    public Product toEntity(String productName, Lists lists) {
         return Product.builder()
-                .name(this.name)
+                .name(productName)
                 .originPrice(this.originPrice)
                 .lists(lists)
                 .build();
