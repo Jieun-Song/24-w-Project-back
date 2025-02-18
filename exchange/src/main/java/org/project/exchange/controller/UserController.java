@@ -9,7 +9,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Map;
-
+import java.util.List;
 import org.project.exchange.global.api.ApiResponse;
 import org.project.exchange.model.user.Dto.SignInRequest;
 import org.project.exchange.model.user.Dto.SignInResponse;
@@ -22,27 +22,56 @@ import org.project.exchange.model.user.service.UserService;
 @RestController
 @RequestMapping("/api/auth")
 public class UserController {
+
     private final UserService userService;
 
+    // // 회원가입
+    // @PostMapping("/signup")
+    // public ResponseEntity<?> signUp(
+    //         @Validated @RequestBody SignUpRequest request,
+    //         @RequestBody String otp,
+    //         @RequestParam List<Boolean> agreedTerms, // 약관 동의 상태를 boolean 리스트로 받음
+    //         BindingResult bindingResult) {
+
+    //     if (bindingResult.hasErrors()) {
+    //         return ResponseEntity.badRequest()
+    //                 .body(ApiResponse.createFail(bindingResult));
+    //     }
+
+    //     SignUpResponse response = userService.signUp(request, otp, agreedTerms);
+    //     if (response.getMsg().equals("회원가입 성공")) {
+    //         return ResponseEntity.ok(ApiResponse.createSuccess(response));
+    //     }
+
+    //     return ResponseEntity.badRequest()
+    //             .body(ApiResponse.createError(response.getMsg()));
+    // }
+
     @PostMapping("/signup")
-    public ResponseEntity<ApiResponse<SignUpResponse>> signUp(@Validated @RequestBody SignUpRequest request,
+    public ResponseEntity<?> signUp(
+            @Validated @RequestBody SignUpRequest request,
             BindingResult bindingResult) {
+
         if (bindingResult.hasErrors()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body((ApiResponse<SignUpResponse>) ApiResponse.createFail(bindingResult));
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.createFail(bindingResult));
         }
 
-        SignUpResponse response = userService.signUp(request);
+        SignUpResponse response = userService.signUp(request, request.getOtp(), request.getAgreedTerms());
         if (response.getMsg().equals("회원가입 성공")) {
             return ResponseEntity.ok(ApiResponse.createSuccess(response));
         }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body((ApiResponse<SignUpResponse>) ApiResponse.createError(response.getMsg()));
+
+        return ResponseEntity.badRequest()
+                .body(ApiResponse.createError(response.getMsg()));
     }
 
+    // 로그인
     @PostMapping("/signin")
-    public ResponseEntity<ApiResponse<SignInResponse>> signIn(@Validated @RequestBody SignInRequest request,
+    public ResponseEntity<ApiResponse<SignInResponse>> signIn(
+            @Validated @RequestBody SignInRequest request,
             BindingResult bindingResult) {
+
         if (bindingResult.hasErrors()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body((ApiResponse<SignInResponse>) ApiResponse.createFail(bindingResult));
@@ -52,6 +81,7 @@ public class UserController {
         if (response.getMsg().equals("로그인 성공")) {
             return ResponseEntity.ok(ApiResponse.createSuccess(response));
         }
+
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body((ApiResponse<SignInResponse>) ApiResponse.createError(response.getMsg()));
     }
@@ -68,13 +98,13 @@ public class UserController {
                 .body((ApiResponse<String>) ApiResponse.createError(response));
     }
 
-    // @GetMapping("/kakao/signin")
-    // public ResponseEntity<?> kakaoSignIn(@RequestParam String code) {
-    //     System.out.println("Kakao SignIn endpoint hit with code: " + code);
-    //     SignInResponse response = userService.kakaoSignIn(code);
-    //     if (response.getMsg().equals("카카오 로그인 성공")) {
-    //         return ResponseEntity.ok(ApiResponse.createSuccess(response));
-    //     }
-    //     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.createError(response.getMsg()));
-    // }
+//    @GetMapping("/kakao/signin")
+//    public ResponseEntity<?> kakaoSignIn(@RequestParam String code) {
+//        System.out.println("Kakao SignIn endpoint hit with code: " + code);
+//        SignInResponse response = userService.kakaoSignIn(code);
+//        if (response.getMsg().equals("카카오 로그인 성공")) {
+//            return ResponseEntity.ok(ApiResponse.createSuccess(response));
+//        }
+//        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.createError(response.getMsg()));
+//    }
 }
