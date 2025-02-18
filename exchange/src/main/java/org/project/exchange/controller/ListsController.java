@@ -37,7 +37,10 @@ public class ListsController {
         return ResponseEntity.noContent().build();//204 No Content반환
     }
     //총금액표시
-
-    //일 소비 총액 표시
+    @GetMapping("/total/{id}")
+    public ResponseEntity<Double> getTotal(@PathVariable Long id) {
+        double total = listsService.getTotal(id);
+        return ResponseEntity.ok(total);
+    }
 }
 

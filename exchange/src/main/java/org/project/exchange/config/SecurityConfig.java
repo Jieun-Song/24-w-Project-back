@@ -28,7 +28,7 @@ public class SecurityConfig {
 
     private final String[] allowedUrls = { "/api/auth/signin", "/api/auth/signup", "/api/auth/kakao/signin",
             "/api/v1/**", "/api/auth/signup/otp", "/api/auth/signup/otp/check", "/api/v1/**",
-            "/api/lists","/api/lists/**","/api/lists/add","/api/lists/delete/**",
+            "/api/lists","/api/lists/**","/api/lists/add","/api/lists/delete/**","/api/lists/total/**",
             "/api/currency","/api/currency/import",
             "/api/products/add", "/api/products", "/api/products/**","/api/products/add/**"}; // 허용할 URL 목록
 
