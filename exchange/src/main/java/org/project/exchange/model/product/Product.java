@@ -24,11 +24,13 @@ public class Product {
     @Column(name = "origin_price", nullable = false) // 원래 가격
     private Double originPrice;
 
+    @Column(name = "deleted_yn", nullable = false) // 삭제 여부
+    private Boolean deletedYn = false;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "list_id") // 리스트 ID
     @JsonIgnore
     private Lists lists;
-
 
     @Builder
     public Product(String name, Double originPrice, Lists lists) {
