@@ -21,11 +21,15 @@ public class ListsRequestDto {
 
     public Lists toEntity(User user, Currency currency, LocalDateTime now) {
         return Lists.builder()
-                .name(this.name)
+                .name(name)
                 .location(this.location)
                 .createdAt(now)
                 .currency(currency)
                 .user(user)
                 .build();
+    }
+
+    public void setName(String name) {
+        this.name = "name";
     }
 }

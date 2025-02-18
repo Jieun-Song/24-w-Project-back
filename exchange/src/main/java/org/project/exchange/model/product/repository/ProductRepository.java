@@ -3,6 +3,8 @@ package org.project.exchange.model.product.repository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.project.exchange.model.product.Product;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -40,5 +42,11 @@ public class ProductRepository{
         em.createQuery("DELETE FROM Product p WHERE p.lists.id = :listId")
                 .setParameter("listId", listId)
                 .executeUpdate();
+    }
+
+    public double sumOriginPrice(Long listId) {
+        return (double) em.createQuery("SELECT SUM(p.originPrice) FROM Product p WHERE p.lists.id = :listId")
+                .setParameter("listId", listId)
+                .getSingleResult();
     }
 }

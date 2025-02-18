@@ -24,12 +24,6 @@ public class ProductService {
     private final ListsRepository listsRepository;
     private final CurrencyRepository currencyRepository;
 
-    // 구현해야 할 로직
-    // 1. list별 product 보여주기
-    // 2. product 생성
-    // 3. product 수정
-    // 4. 각 product 삭제
-    // 5. list별 product 삭제
     public List<ProductResponseDto> findByListsId(Long listId) {
         return productRepository.findByListId(listId)
                 .stream()
