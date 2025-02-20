@@ -1,8 +1,0 @@
-
-ˆ	java:S112p"FDefine and throw a dedicated exception instead of using a generic one.(“Öœ£8ˆÔÙ¼Ñ2J$024f5c53-fec4-4c14-ad82-795a3d28fe73
-–
-java:S2229$"U"sendMail's" @Transactional requirement is incompatible with the one for this method.(Ä¿çÒøÿÿÿÿJ$e3781ac2-30df-47e3-a69d-578e946ba3cb
-–
-java:S6809$"UCall transactional methods via an injected dependency instead of directly via 'this'.(Ä¿çÒøÿÿÿÿJ$518d603a-0ff8-4cbd-a15d-dd73141c19fc
-f
-java:S2119@"Save and re-use this "Random".(šŸ«íøÿÿÿÿ8’ÔÙ¼Ñ2J$c416f7d5-b4d4-4223-b8c8-a029ac38b81c
