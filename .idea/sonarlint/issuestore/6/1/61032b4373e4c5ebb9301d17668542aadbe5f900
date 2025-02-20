@@ -1,9 +1,11 @@
 
+ˆ	java:S112°"FDefine and throw a dedicated exception instead of using a generic one.(«Ô´{8ÇÔ¼”Ò2J$34ea715b-17f6-4688-85ac-ff1681b782d7
+‰	java:S112·"FDefine and throw a dedicated exception instead of using a generic one.(ïïú¿8ÈÔ¼”Ò2J$bb9c3153-7b87-4fc1-bbea-9936bcf33b99
+Ž	java:S112½"FDefine and throw a dedicated exception instead of using a generic one.(Ý®ó½üÿÿÿÿ8ÈÔ¼”Ò2J$03efcc03-4180-461d-906e-17b7329a38bb
 Ð
-java:S1130Œ"‹Remove the declaration of thrown exception 'com.fasterxml.jackson.core.JsonProcessingException', as it cannot be thrown from method's body.(ÙÙõÇ8ûÒÙ¼Ñ2J$ef9dd805-3fff-493b-b27f-d510598c095a
-	java:S125¤"<This block of commented-out lines of code should be removed.(¼¿¹Ë8‡ÓÙ¼Ñ2J$af3e0115-c343-43b1-a449-90fd4ce49f76
-	java:S125¨"<This block of commented-out lines of code should be removed.(‡´œ°8‡ÓÙ¼Ñ2J$92469692-d105-49cb-8c2d-e4eb9e4ac6d8
-‰
-java:S1128"FRemove this unused import 'org.project.exchange.model.user.KakaoUser'.(‰‘ÝÃ8ˆÓÙ¼Ñ2J$82719974-6192-4dc6-9d5e-eb9a4e4b7139
-Ÿ
-java:S1128"\Remove this unused import 'org.project.exchange.model.auth.repository.PermissionRepository'.(Ï’ˆØ8ˆÓÙ¼Ñ2J$8b204daa-09f7-4a04-81a2-5789ef1e47f4
+java:S1130“"‹Remove the declaration of thrown exception 'com.fasterxml.jackson.core.JsonProcessingException', as it cannot be thrown from method's body.(ÙÙõÇ8ÓÔ¼”Ò2J$c1b08334-1c41-4e04-8c33-bdc8c3ea1394
+n	java:S106«"+Replace this use of System.out by a logger.(ªôÁ¨8ÔÔ¼”Ò2J$9692d119-e8c6-44be-ab7d-c1e61f30dc17
+n	java:S106²"+Replace this use of System.out by a logger.(–Úöí8ÕÔ¼”Ò2J$285a91c0-35b6-4b6d-af2d-ef261b47e3d1
+s	java:S106¹"+Replace this use of System.out by a logger.(Ô¤Þøÿÿÿÿ8ÕÔ¼”Ò2J$518da937-6957-4ff8-bbf6-310a7a042a62
+m	java:S106¿"+Replace this use of System.out by a logger.(ê¶Ä8ÕÔ¼”Ò2J$bd09278a-7486-4377-bc4c-7f32d87aeec2
+s	java:S106Ä"+Replace this use of System.out by a logger.(ÓÅüËüÿÿÿÿ8ÕÔ¼”Ò2J$d6b00dad-9764-44aa-b823-4f5f603ee6de

@@ -2,10 +2,10 @@ package org.project.exchange.model.user.Dto;
 
 import lombok.Builder;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 
-@RequiredArgsConstructor
 @Getter
+@NoArgsConstructor
 public class SignInRequest {
 
     private String userEmail;

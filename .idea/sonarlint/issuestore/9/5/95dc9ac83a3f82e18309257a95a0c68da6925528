@@ -1,4 +1,7 @@
 
-]
-java:S1220""Move this file to a named package.8Ø”Ÿº—2J$c95de231-f1c7-4949-a7c2-02e05cae28b5
-~	java:S125"<This block of commented-out lines of code should be removed.(åµãß8≥”Ÿº—2J$0a8084ff-7a59-4a2e-bbe2-e4e2841ce36f
+ã
+java:S1319Ö"mThe return type of this method should be an interface such as "Map" rather than the implementation "HashMap".(÷Ô¥ç8Â∞Ëº—2
+a	java:S112P"FDefine and throw a dedicated exception instead of using a generic one.(´‘¥{8Ë∞Ëº—2
+g	java:S112`"FDefine and throw a dedicated exception instead of using a generic one.(«ƒåÅ˚ˇˇˇˇ8Ë∞Ëº—2
+k
+java:S1192d"IDefine a constant instead of duplicating this literal "nickname" 3 times.(Ê˛Á¡˘ˇˇˇˇ8È∞Ëº—2
