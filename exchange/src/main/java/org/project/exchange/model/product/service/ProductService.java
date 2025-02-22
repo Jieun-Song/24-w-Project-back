@@ -1,6 +1,7 @@
 package org.project.exchange.model.product.service;
 
 import jakarta.transaction.Transactional;
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.project.exchange.model.currency.repository.CurrencyRepository;
 import org.project.exchange.model.list.Lists;
@@ -32,10 +33,11 @@ public class ProductService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 리스트가 존재하지 않습니다."));
         long productCount = productRepository.countAllProduct()+1;
         String productName = "상품" + productCount;
-        Product product = requestDto.toEntity(productName,lists);
+        Product product =new Product(productName, requestDto.getOriginPrice(), lists);
         productRepository.save(product);
         return product;
     }
+
     public Product update(Long productId, ProductRequestDto requestDto) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("상품이 존재하지 않습니다."));
@@ -45,6 +47,10 @@ public class ProductService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 리스트가 존재하지 않습니다."));
         product.setLists(lists);
         productRepository.save(product);
+        /***
+         * 이거 이렇게 save해도 되는지,, update 다시
+         * update repository에 update 메서드 만들어야할듯
+         */
         return product;
     }
 

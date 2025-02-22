@@ -40,7 +40,8 @@ public class ListsService {
         LocalDateTime now = LocalDateTime.now();
         long listCount = listsRepository.countAllList()+1;
         String listName = "리스트" + listCount;
-        Lists newLists = requestDto.toEntity(listName, user, currency, now);
+
+        Lists newLists = new Lists(listName,now, requestDto.getLocation(), user, currency);
 
         return listsRepository.save(newLists);
     }
@@ -55,5 +56,18 @@ public class ListsService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 리스트가 존재하지 않습니다."));
 
         return productRepository.sumOriginPrice(id);
+    }
+
+    //List수정
+    public Lists updateList(Long id, ListsRequestDto listsRequestDto) {
+        Lists lists = listsRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("해당 리스트가 존재하지 않습니다."));
+//        lists.update(listsRequestDto);
+        return listsRepository.save(lists);
+        /**
+         * 리스트 수정
+         *
+         * repository에서 업데이트 해야할거같은디,, 64줄 처럼 해오도디나?
+         */
     }
 }

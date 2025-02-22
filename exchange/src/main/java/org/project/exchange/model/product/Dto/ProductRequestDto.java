@@ -18,11 +18,11 @@ public class ProductRequestDto {
         this.listId = listId;
     }
 
-    public Product toEntity(String productName, Lists lists) {
-        return Product.builder()
-                .name(productName)
-                .originPrice(this.originPrice)
-                .lists(lists)
-                .build();
-    }
+//    public Product toEntity(String productName, Lists lists) {
+//        return Product.builder()
+//                .name(productName)
+//                .originPrice(this.originPrice)
+//                .lists(lists)
+//                .build();
+//    }
 }
