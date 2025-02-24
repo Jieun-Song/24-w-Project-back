@@ -1,15 +1,18 @@
 package org.project.exchange.model.user.Dto;
 
-import java.sql.Date;
-
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 import lombok.Getter;
+
+import java.sql.Date;
 import java.util.List;
 
 @Getter
 public class SignUpRequest {
 
     private final String userName;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private final Date userDateOfBirth;
     private final boolean userGender;
     private final String userEmail;

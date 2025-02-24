@@ -7,9 +7,11 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.project.exchange.model.currency.Currency;
 import org.project.exchange.model.product.Product;
 import org.project.exchange.model.user.User;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +28,15 @@ public class Lists {
     @Column(name = "name", nullable = false, length = 100) // 리스트 이름
     private String name;
 
+    @Column(name = "created_at", nullable = false) // 생성 일자+시간
+    private LocalDateTime createdAt;
+
+    @Column(name = "location", nullable = false) // 위치
+    private String location;
+
+    @Column(name = "deleted_yn", nullable = false) // 삭제 여부
+    private Boolean deletedYn = false;
+
     @OneToMany(mappedBy = "lists", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<Product> products; // 해당 리스트의 상품들
@@ -35,10 +46,22 @@ public class Lists {
     @JoinColumn(name = "user_id", nullable = false) // 사용자 ID
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "currency_id") // 통화 ID
+    @JsonIgnore
+    private Currency currency;
+
     @Builder
-    public Lists(String name, User user) {
+    public Lists(String name, LocalDateTime createdAt, String location, User user, Currency currency) {
         this.name = name;
+        this.createdAt = createdAt;
+        this.location = location;
         this.products = new ArrayList<>();
         this.user = user;
+        this.currency = currency;
+    }
+
+    public void setDeletedYn(Boolean deletedYn) {
+        this.deletedYn = deletedYn;
     }
 }
