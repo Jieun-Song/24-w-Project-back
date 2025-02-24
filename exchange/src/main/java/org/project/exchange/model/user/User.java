@@ -1,5 +1,6 @@
 package org.project.exchange.model.user;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -41,17 +42,11 @@ public class User {
     @Column(name = "user_date_of_birth", nullable = false)
     private Date userDateOfBirth; // 생년월일
 
-    @Column(name = "user_phone_number", nullable = false, length = 15)
-    private String userPhoneNumber; // 전화번호
-
     @Column(name = "user_gender", nullable = false, length = 1)
     private boolean userGender; // 성별
 
     @Column(name = "user_email", nullable = false, length = 100)
     private String userEmail; // 이메일
-
-    @Column(name = "user_username", nullable = false, length = 50)
-    private String userUsername; // 아이디
 
     @Column(name = "user_password", nullable = false, length = 255)
     private String userPassword; // 비밀번호
@@ -72,20 +67,19 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SystemLog> systemLogs; // 시스템 로그
 
+    @JsonManagedReference
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Lists> lists; // 사용자가 생성한 리스트들
 
     @Builder(toBuilder = true)
-    public User(Long userId, String userName, Date userDateOfBirth, String userPhoneNumber,
-            boolean userGender, String userEmail, String userUsername, String userPassword,
+    public User(Long userId, String userName, Date userDateOfBirth, 
+            boolean userGender, String userEmail, String userPassword,
             Date userCreatedAt, Date userUpdatedAt) {
         this.userId = userId;
         this.userName = userName;
         this.userDateOfBirth = userDateOfBirth;
-        this.userPhoneNumber = userPhoneNumber;
         this.userGender = userGender;
         this.userEmail = userEmail;
-        this.userUsername = userUsername;
         this.userPassword = userPassword;
         this.userCreatedAt = userCreatedAt != null ? userCreatedAt : Date.valueOf(LocalDate.now());
         this.userUpdatedAt = userUpdatedAt;

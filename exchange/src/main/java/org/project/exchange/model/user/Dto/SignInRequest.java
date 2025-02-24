@@ -2,18 +2,18 @@ package org.project.exchange.model.user.Dto;
 
 import lombok.Builder;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 
-@RequiredArgsConstructor
 @Getter
+@NoArgsConstructor
 public class SignInRequest {
 
-    private String userUsername;
+    private String userEmail;
     private String userPassword;
 
     @Builder
-    public SignInRequest(String userUsername, String userPassword) {
-        this.userUsername = userUsername;
+    public SignInRequest(String userEmail, String userPassword) {
+        this.userEmail = userEmail;
         this.userPassword = userPassword;
     }
 
