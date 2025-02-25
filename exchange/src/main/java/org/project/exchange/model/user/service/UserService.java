@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j; // 📌 log 사용을 위한 Lombok 어노테이션
 
 import java.sql.Date;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -203,6 +204,14 @@ public class UserService {
                 .build();
     }
 
-        // 회원정보 수정 - 이름, 전화번호, 비밀번호
+    // 아이디(이메일)찾기 - 이름, 생년월일로
+    @Transactional
+    public String findId(String userName, LocalDate userDateOfBirth) {
+        User user = userRepository.findByUserNameAndUserDateOfBirth(userName, userDateOfBirth);
+        if (user == null) {
+            return "일치하는 사용자 정보가 없습니다.";
+        }
+        return user.getUserEmail();
+    }
 
 }
