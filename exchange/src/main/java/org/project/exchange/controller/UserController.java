@@ -10,6 +10,7 @@ import org.project.exchange.model.user.Dto.SignInResponse;
 import org.project.exchange.model.user.Dto.SignUpRequest;
 import org.project.exchange.model.user.Dto.SignUpResponse;
 import org.project.exchange.model.user.service.UserService;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -17,6 +18,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import lombok.extern.slf4j.Slf4j; // 📌 log 사용을 위한 Lombok 어노테이션
 
+import java.sql.Date;
+import java.time.LocalDate;
 import java.util.Map;
 
 @Slf4j
@@ -107,4 +110,20 @@ public class UserController {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.createError(response.getMsg()));
     }
+
+    @GetMapping("/find-id")
+    public ResponseEntity<ApiResponse<?>> findId(
+            @RequestParam String userName,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate userDateOfBirth) {
+
+        String userEmail = userService.findId(userName, userDateOfBirth);
+        if (userEmail != null) {
+            return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(userEmail, "아이디 찾기 성공"));
+        }
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.createError("아이디 찾기 실패"));
+    }
+
+
 }
