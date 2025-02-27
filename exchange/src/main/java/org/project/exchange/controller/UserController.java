@@ -2,8 +2,11 @@ package org.project.exchange.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.project.exchange.global.api.ApiResponse;
+import org.project.exchange.model.user.Dto.FindPasswordRequest;
 import org.project.exchange.model.user.Dto.KakaoLoginRequest;
 import org.project.exchange.model.user.Dto.SignInRequest;
 import org.project.exchange.model.user.Dto.SignInResponse;
@@ -20,6 +23,7 @@ import lombok.extern.slf4j.Slf4j; // 📌 log 사용을 위한 Lombok 어노테�
 
 import java.sql.Date;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 @Slf4j
@@ -80,6 +84,7 @@ public class UserController {
                 .body(ApiResponse.createError(response.getMsg()));
     }
 
+    // 로그아웃
     @PostMapping("/signout")
     public ResponseEntity<ApiResponse<?>> signOut(@RequestBody Map<String, String> request)
             throws JsonProcessingException {
@@ -92,6 +97,7 @@ public class UserController {
                 .body(ApiResponse.createError(response));
     }
 
+    //카카오 로그인
     @PostMapping("/kakao/signin")
     public ResponseEntity<ApiResponse<?>> kakaoSignIn(@RequestBody KakaoLoginRequest request) {
         log.info("🔍 Raw Request Body: " + request);
@@ -111,6 +117,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.createError(response.getMsg()));
     }
 
+    // 아이디 찾기 - 이름, 생년월일
     @GetMapping("/find-id")
     public ResponseEntity<ApiResponse<?>> findId(
             @RequestParam String userName,
@@ -125,5 +132,37 @@ public class UserController {
                 .body(ApiResponse.createError("아이디 찾기 실패"));
     }
 
+    /**
+     * 📌 **비밀번호 찾기 (OTP 요청)**
+     */
+    @PostMapping("/find-password")
+    public ResponseEntity<ApiResponse<?>> findPassword(@RequestBody FindPasswordRequest request) {
+        // String → LocalDate 변환
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate birthDate = LocalDate.parse(request.getUserDateOfBirth(), formatter);
 
+        String result = userService.findPassword(
+            request.getUserEmail(),
+            request.getUserName(),
+            birthDate // 변환된 LocalDate 전달
+        );
+
+        return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(null, result));
+    }
+    /**
+     * 📌 **OTP 검증 및 비밀번호 처리**
+     */
+    @PostMapping("/verify-otp")
+    public ResponseEntity<ApiResponse<?>> verifyOtpAndProcess(
+            @RequestParam String userEmail,
+            @RequestParam String userName,
+            @RequestParam LocalDate userDateOfBirth,
+            @RequestParam String otp,
+            @RequestParam(required = false) Boolean resetPassword,
+            @RequestParam(required = false) String newPassword) throws MessagingException {
+
+        String response = userService.verifyOtpAndProcess(userEmail, userName, userDateOfBirth, otp, resetPassword,
+                newPassword);
+        return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(null, response));
+    }
 }

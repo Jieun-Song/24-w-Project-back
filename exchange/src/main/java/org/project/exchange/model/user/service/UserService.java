@@ -1,6 +1,8 @@
 package org.project.exchange.model.user.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.project.exchange.config.TokenProvider;
 import org.project.exchange.model.auth.service.EmailService;
@@ -24,6 +26,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Random;
 import java.util.regex.Pattern;
 
 @Slf4j
@@ -38,6 +41,10 @@ public class UserService {
     private final PermissionService permissionService; // 약관 동의 관리
     private final EmailService emailService; // 이메일 인증 관리
     private final KakaoService kakaoService; // 카카오 로그인 관리
+    private final Random random = new Random();
+
+    // 📌 비밀번호 패턴 (영문, 숫자, 특수문자 포함, 8~16자)
+    private static final String PASSWORD_PATTERN = "^(?=.*[a-zA-Z])(?=.*\\d)(?=.*[!@#$%^&*]).{8,16}$";
     
     @Transactional
     public void sendOtpToEmail(String email) {
@@ -169,6 +176,7 @@ public class UserService {
         return Pattern.matches(passwordPattern, password);
     }
 
+    // 카카오 로그인
     @Transactional
     public SignInResponse kakaoSignIn(String accessToken) {
         if (accessToken == null || accessToken.isEmpty()) {
@@ -212,6 +220,100 @@ public class UserService {
             return "일치하는 사용자 정보가 없습니다.";
         }
         return user.getUserEmail();
+    }
+
+    /**
+     * 비밀번호 찾기 (OTP 인증 포함)
+     * @param userEmail 사용자 이메일
+     * @param userName 사용자 이름
+     * @param userDateOfBirth 사용자 생년월일
+     * @param inputOtp 입력된 OTP
+     * @param resetPassword 비밀번호 재설정 여부
+     * @return 결과 메시지
+     */
+    /**
+     * 📌 **비밀번호 찾기 (OTP 요청)**
+     * - 사용자가 이메일, 이름, 생년월일을 입력하면 인증번호를 발송
+     */
+    @Transactional
+    public String findPassword(String userEmail, String userName, LocalDate userDateOfBirth) {
+        User user = userRepository.findByUserEmail(userEmail);
+
+        if (user == null || !user.getUserName().equals(userName)
+                || !user.getUserDateOfBirth().equals(userDateOfBirth)) {
+            return "일치하는 사용자 정보가 없습니다.";
+        }
+
+        // OTP 발송
+        emailService.setEmail(userEmail);
+        return "이메일로 인증번호가 전송되었습니다.";
+    }
+
+    /**
+     * 📌 **OTP 검증 및 비밀번호 재설정 처리**
+     * - 사용자가 OTP를 입력하여 검증을 수행
+     * - 새로운 비밀번호를 입력하면 변경 가능
+     * - 비밀번호 재설정을 원하면 랜덤 비밀번호 생성 후 이메일로 전송
+     */
+    @Transactional
+    public String verifyOtpAndProcess(String userEmail, String userName, LocalDate userDateOfBirth,
+            String inputOtp, Boolean resetPassword, String newPassword) throws MessagingException {
+        User user = userRepository.findByUserEmail(userEmail);
+
+        if (user == null || !user.getUserName().equals(userName)
+                || !user.getUserDateOfBirth().equals(userDateOfBirth)) {
+            return "일치하는 사용자 정보가 없습니다.";
+        }
+
+        // 📌 OTP 인증 확인
+        if (!emailService.checkAuthNumber(userEmail, inputOtp)) {
+            return "OTP 인증 실패";
+        }
+
+        // 📌 사용자가 직접 새로운 비밀번호 입력한 경우
+        if (newPassword != null) {
+            if (!isValidPassword(newPassword)) {
+                return "비밀번호는 8~16자이며, 영문, 숫자, 특수문자를 포함해야 합니다.";
+            }
+
+            user = user.toBuilder()
+                    .userPassword(passwordEncoder.encode(newPassword))
+                    .build();
+            userRepository.save(user);
+            return "비밀번호가 성공적으로 변경되었습니다.";
+        }
+
+        // 📌 사용자가 랜덤 비밀번호 재설정을 원하는 경우
+        if (resetPassword != null && resetPassword) {
+            String tempPassword = generateValidRandomPassword();
+            user = user.toBuilder()
+                    .userPassword(passwordEncoder.encode(tempPassword))
+                    .build();
+            userRepository.save(user);
+
+            // 📌 이메일로 새 비밀번호 전송
+            emailService.sendMail("noreply@example.com", userEmail, "새 비밀번호 안내",
+                    "새로운 비밀번호: " + tempPassword);
+            return "새로운 비밀번호가 이메일로 전송되었습니다.";
+        }
+
+        return "OTP 인증 성공";
+    }
+
+    /**
+     * 📌 **랜덤 비밀번호 생성**
+     * - 비밀번호 규칙을 만족할 때까지 생성 반복
+     */
+    private String generateValidRandomPassword() {
+        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+        StringBuilder password;
+        do {
+            password = new StringBuilder();
+            for (int i = 0; i < 10; i++) {
+                password.append(characters.charAt(random.nextInt(characters.length())));
+            }
+        } while (!isValidPassword(password.toString())); // 규칙 만족할 때까지 반복
+        return password.toString();
     }
 
 }
