@@ -17,12 +17,4 @@ public class ProductRequestDto {
         this.originPrice = originPrice;
         this.listId = listId;
     }
-
-//    public Product toEntity(String productName, Lists lists) {
-//        return Product.builder()
-//                .name(productName)
-//                .originPrice(this.originPrice)
-//                .lists(lists)
-//                .build();
-//    }
 }

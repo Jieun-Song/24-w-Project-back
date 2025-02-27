@@ -1,9 +1,7 @@
 package org.project.exchange.model.product.service;
 
 import jakarta.transaction.Transactional;
-import lombok.Builder;
 import lombok.RequiredArgsConstructor;
-import org.project.exchange.model.currency.repository.CurrencyRepository;
 import org.project.exchange.model.list.Lists;
 import org.project.exchange.model.list.repository.ListsRepository;
 import org.project.exchange.model.product.Dto.ProductRequestDto;
@@ -28,6 +26,7 @@ public class ProductService {
                 .map(ProductResponseDto::new)
                 .collect(Collectors.toList());
     }
+
     public Product save(ProductRequestDto requestDto) {
         Lists lists = listsRepository.findById(requestDto.getListId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 리스트가 존재하지 않습니다."));

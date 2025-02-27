@@ -14,6 +14,7 @@ import org.project.exchange.model.user.User;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -63,5 +64,16 @@ public class Lists {
 
     public void setDeletedYn(Boolean deletedYn) {
         this.deletedYn = deletedYn;
+    }
+
+    public void setName(String newName){
+        this.name = newName;
+    }
+    public void setLocation(String newLocation){
+        this.location = newLocation;
+    }
+
+    public void setCurrency(Optional<Currency> byId) {
+        this.currency = byId.get();
     }
 }

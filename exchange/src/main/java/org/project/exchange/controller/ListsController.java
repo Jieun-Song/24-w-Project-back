@@ -2,8 +2,10 @@ package org.project.exchange.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.project.exchange.model.list.Dto.ListsRequestDto;
+import org.project.exchange.global.api.ApiResponse;
+import org.project.exchange.model.list.Dto.CreateRequest;
 import org.project.exchange.model.list.Dto.ListsResponseDto;
+import org.project.exchange.model.list.Dto.UpdateRequest;
 import org.project.exchange.model.list.Lists;
 import org.project.exchange.model.list.service.ListsService;
 import org.springframework.http.HttpStatus;
@@ -21,16 +23,16 @@ public class ListsController {
 
     //새로운 리스트 추가
     @PostMapping("/add")
-    public ResponseEntity<Lists> createList(@RequestBody ListsRequestDto requestDto) {
+    public ResponseEntity<Lists> createList(@RequestBody CreateRequest requestDto) {
         Lists newLists = listsService.createList(requestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(newLists);
     }
 
     //모든 리스트 불러오기
     @GetMapping
-    public ResponseEntity<List<ListsResponseDto>> getAllLists() {
+    public ResponseEntity<ApiResponse<List<ListsResponseDto>>> getAllLists() {
         List<ListsResponseDto> lists = listsService.showAllLists();
-        return ResponseEntity.ok(lists);
+        return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(lists, "리스트 조회 성공"));
     }
 
     //특정 리스트 삭제
@@ -48,9 +50,9 @@ public class ListsController {
     }
 
     //환율 변경
-    @PatchMapping("/currency/update/{id}")
-    public ResponseEntity<Lists> updateCurrency(@PathVariable Long id, @RequestBody ListsRequestDto listsRequestDto) {
-        Lists updatedLists = listsService.updateList(id, listsRequestDto);
+    @PatchMapping("/update/{id}")
+    public ResponseEntity<Lists> updateCurrency(@PathVariable Long id, @RequestBody UpdateRequest requestDto) {
+        Lists updatedLists = listsService.updateList(id, requestDto);
         return ResponseEntity.ok(updatedLists);
     }
 }

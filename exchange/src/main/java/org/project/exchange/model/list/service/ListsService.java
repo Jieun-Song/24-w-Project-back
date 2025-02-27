@@ -3,8 +3,9 @@ package org.project.exchange.model.list.service;
 import lombok.RequiredArgsConstructor;
 import org.project.exchange.model.currency.Currency;
 import org.project.exchange.model.currency.repository.CurrencyRepository;
-import org.project.exchange.model.list.Dto.ListsRequestDto;
+import org.project.exchange.model.list.Dto.CreateRequest;
 import org.project.exchange.model.list.Dto.ListsResponseDto;
+import org.project.exchange.model.list.Dto.UpdateRequest;
 import org.project.exchange.model.list.Lists;
 import org.project.exchange.model.list.repository.ListsRepository;
 import org.project.exchange.model.product.repository.ProductRepository;
@@ -28,10 +29,10 @@ public class ListsService {
     public List<ListsResponseDto> showAllLists() {
         return listsRepository.findAll()
                 .stream()
-                .map(ListsResponseDto::new)
+                .map(lists -> new ListsResponseDto(lists))
                 .collect(Collectors.toList());
     }
-    public Lists createList(ListsRequestDto requestDto) {
+    public Lists createList(CreateRequest requestDto) {
         User user = userRepository.findByUserId(requestDto.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
         Currency currency = currencyRepository.findById(requestDto.getCurrencyId())
@@ -54,20 +55,16 @@ public class ListsService {
     public double getTotal(Long id) {
         Lists lists = listsRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 리스트가 존재하지 않습니다."));
-
         return productRepository.sumOriginPrice(id);
     }
 
     //List수정
-    public Lists updateList(Long id, ListsRequestDto listsRequestDto) {
+    public Lists updateList(Long id, UpdateRequest requestDto) {
         Lists lists = listsRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 리스트가 존재하지 않습니다."));
-//        lists.update(listsRequestDto);
+        lists.setName(requestDto.getName());
+        lists.setLocation(requestDto.getLocation());
+        lists.setCurrency(currencyRepository.findById(requestDto.getCurrencyId()));
         return listsRepository.save(lists);
-        /**
-         * 리스트 수정
-         *
-         * repository에서 업데이트 해야할거같은디,, 64줄 처럼 해오도디나?
-         */
     }
 }

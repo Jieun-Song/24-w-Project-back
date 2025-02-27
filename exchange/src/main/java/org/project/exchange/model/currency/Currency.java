@@ -1,5 +1,7 @@
 package org.project.exchange.model.currency;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import org.project.exchange.model.product.Product;
@@ -7,6 +9,7 @@ import org.project.exchange.model.product.Product;
 import java.util.List;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Entity
 @Table(name = "currency")
 @Getter
