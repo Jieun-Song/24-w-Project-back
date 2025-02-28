@@ -37,3 +37,4 @@ out/
 .vscode/
 
 jwt.yml
+.git/
