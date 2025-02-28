@@ -1,6 +1,8 @@
 package org.project.exchange.model.user.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.project.exchange.config.TokenProvider;
 import org.project.exchange.model.auth.service.EmailService;
@@ -24,6 +26,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Random;
 import java.util.regex.Pattern;
 
 @Slf4j
@@ -38,6 +41,10 @@ public class UserService {
     private final PermissionService permissionService; // 약관 동의 관리
     private final EmailService emailService; // 이메일 인증 관리
     private final KakaoService kakaoService; // 카카오 로그인 관리
+    private final Random random = new Random();
+
+    // 📌 비밀번호 패턴 (영문, 숫자, 특수문자 포함, 8~16자)
+    private static final String PASSWORD_PATTERN = "^(?=.*[a-zA-Z])(?=.*\\d)(?=.*[!@#$%^&*]).{8,16}$";
     
     @Transactional
     public void sendOtpToEmail(String email) {
@@ -169,6 +176,7 @@ public class UserService {
         return Pattern.matches(passwordPattern, password);
     }
 
+    // 카카오 로그인
     @Transactional
     public SignInResponse kakaoSignIn(String accessToken) {
         if (accessToken == null || accessToken.isEmpty()) {
@@ -214,4 +222,62 @@ public class UserService {
         return user.getUserEmail();
     }
 
+    // 비밀번호 찾기 (임시 비밀번호 발급)
+    @Transactional
+    public String findPassword(String userEmail, String userName) {
+        User user = userRepository.findByUserEmail(userEmail);
+        if (user == null || !user.getUserName().equals(userName)) {
+            return "일치하는 사용자 정보가 없습니다.";
+        }
+
+        // 임시 비밀번호 생성
+        String tempPassword = generateValidRandomPassword();
+        user = user.toBuilder()
+                .userPassword(passwordEncoder.encode(tempPassword))
+                .build();
+        userRepository.save(user);
+
+        // 임시 비밀번호 이메일 전송
+        emailService.sendTemporaryPassword(userEmail, tempPassword);
+
+        return "임시 비밀번호가 이메일로 전송되었습니다.";
+    }
+
+    //  비밀번호 재설정
+    @Transactional
+    public String resetPassword(String userEmail, String newPassword, String confirmPassword) {
+        User user = userRepository.findByUserEmail(userEmail);
+
+        if (user == null) {
+            return "일치하는 사용자 정보가 없습니다.";
+        }
+
+        if (!newPassword.equals(confirmPassword)) {
+            return "새 비밀번호와 확인 비밀번호가 일치하지 않습니다.";
+        }
+
+        if (!isValidPassword(newPassword)) {
+            return "비밀번호는 8~16자이며, 영문, 숫자, 특수문자를 포함해야 합니다.";
+        }
+
+        user = user.toBuilder()
+                .userPassword(passwordEncoder.encode(newPassword))
+                .build();
+        userRepository.save(user);
+
+        return "비밀번호가 성공적으로 변경되었습니다.";
+    }
+
+    //  랜덤 비밀번호 생성 (비밀번호 규칙 적용)
+    private String generateValidRandomPassword() {
+        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+        StringBuilder password;
+        do {
+            password = new StringBuilder();
+            for (int i = 0; i < 10; i++) {
+                password.append(characters.charAt(random.nextInt(characters.length())));
+            }
+        } while (!isValidPassword(password.toString())); // 규칙 만족할 때까지 반복
+        return password.toString();
+    }
 }
