@@ -23,4 +23,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByUserId(Long userId);
 
     User findByUserNameAndUserDateOfBirth(String userName, LocalDate userDateOfBirth);
+
+    Optional<User> findByUserEmailAndUserNameAndUserDateOfBirth(String userEmail, String userName,
+            LocalDate userDateOfBirth);
 }
