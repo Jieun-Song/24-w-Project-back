@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.project.exchange.global.api.ApiResponse;
 import org.project.exchange.model.user.Dto.FindPasswordRequest;
 import org.project.exchange.model.user.Dto.KakaoLoginRequest;
+import org.project.exchange.model.user.Dto.ResetNameResponse;
 import org.project.exchange.model.user.Dto.SignInRequest;
 import org.project.exchange.model.user.Dto.SignInResponse;
 import org.project.exchange.model.user.Dto.SignUpRequest;
@@ -152,5 +153,25 @@ public class UserController {
 
         String response = userService.resetPassword(userEmail, newPassword, confirmPassword);
         return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(null, response));
+    }
+
+    // 이름 재설정
+    @PostMapping("/reset-name")
+    public ResponseEntity<ApiResponse<?>> resetName(@RequestBody Map<String, String> request) {
+        String userEmail = request.get("userEmail");
+        String newName = request.get("newName");
+
+        if (userEmail == null || newName == null) {
+            return ResponseEntity.badRequest().body(ApiResponse.createError("필수 입력값이 누락되었습니다."));
+        }
+        
+        ResetNameResponse response = userService.resetName(userEmail, newName);
+        return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(response, response.getMsg()));
+    }
+    
+    // 아이디로 사용자 정보 조회
+    @GetMapping("/user-info")
+    public ResponseEntity<ApiResponse<?>> getUserInfo(@RequestParam String userEmail) {
+        return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(userService.getUserInfo(userEmail), "사용자 정보 조회 성공"));
     }
 }

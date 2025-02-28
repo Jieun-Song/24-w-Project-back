@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.project.exchange.config.TokenProvider;
 import org.project.exchange.model.auth.service.EmailService;
 import org.project.exchange.model.auth.service.PermissionService;
+import org.project.exchange.model.user.Dto.ResetNameResponse;
 import org.project.exchange.model.user.Dto.SignInRequest;
 import org.project.exchange.model.user.Dto.SignInResponse;
 import org.project.exchange.model.user.Dto.SignUpRequest;
@@ -279,5 +280,35 @@ public class UserService {
             }
         } while (!isValidPassword(password.toString())); // 규칙 만족할 때까지 반복
         return password.toString();
+    }
+
+    // 이름 재설정
+    @Transactional
+    public ResetNameResponse resetName(String userEmail, String newName) {
+        User user = userRepository.findByUserEmail(userEmail);
+        if (user == null) {
+            return ResetNameResponse.builder()
+                    .msg("일치하는 사용자 정보가 없습니다.")
+                    .build();
+        }
+
+        user = user.toBuilder()
+                .userName(newName)
+                .build();
+        userRepository.save(user);
+
+        return ResetNameResponse.builder()
+                .userEmail(userEmail)
+                .msg("이름이 성공적으로 변경되었습니다.")
+                .userName(newName)
+                .build();
+    }
+
+    public Object getUserInfo(String userEmail) {
+        User user = userRepository.findByUserEmail(userEmail);
+        if (user == null) {
+            return "일치하는 사용자 정보가 없습니다.";
+        }
+        return user;
     }
 }
