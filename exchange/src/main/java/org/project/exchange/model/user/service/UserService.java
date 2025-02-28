@@ -2,7 +2,6 @@ package org.project.exchange.model.user.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.project.exchange.config.TokenProvider;
 import org.project.exchange.model.auth.service.EmailService;
@@ -20,7 +19,7 @@ import org.project.exchange.model.user.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import lombok.extern.slf4j.Slf4j; // 📌 log 사용을 위한 Lombok 어노테이션
+import lombok.extern.slf4j.Slf4j; 
 
 import java.sql.Date;
 import java.time.LocalDate;
@@ -235,6 +234,7 @@ public class UserService {
         String tempPassword = generateValidRandomPassword();
         user = user.toBuilder()
                 .userPassword(passwordEncoder.encode(tempPassword))
+                .userUpdatedAt(new Date(System.currentTimeMillis()))
                 .build();
         userRepository.save(user);
 
@@ -263,6 +263,7 @@ public class UserService {
 
         user = user.toBuilder()
                 .userPassword(passwordEncoder.encode(newPassword))
+                .userUpdatedAt(new Date(System.currentTimeMillis()))
                 .build();
         userRepository.save(user);
 
@@ -294,6 +295,7 @@ public class UserService {
 
         user = user.toBuilder()
                 .userName(newName)
+                .userUpdatedAt(new Date(System.currentTimeMillis()))
                 .build();
         userRepository.save(user);
 
