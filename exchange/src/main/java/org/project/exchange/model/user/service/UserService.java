@@ -222,88 +222,53 @@ public class UserService {
         return user.getUserEmail();
     }
 
-    /**
-     * 비밀번호 찾기 (OTP 인증 포함)
-     * @param userEmail 사용자 이메일
-     * @param userName 사용자 이름
-     * @param userDateOfBirth 사용자 생년월일
-     * @param inputOtp 입력된 OTP
-     * @param resetPassword 비밀번호 재설정 여부
-     * @return 결과 메시지
-     */
-    /**
-     * 📌 **비밀번호 찾기 (OTP 요청)**
-     * - 사용자가 이메일, 이름, 생년월일을 입력하면 인증번호를 발송
-     */
+    // 비밀번호 찾기 (임시 비밀번호 발급)
     @Transactional
-    public String findPassword(String userEmail, String userName, LocalDate userDateOfBirth) {
+    public String findPassword(String userEmail, String userName) {
         User user = userRepository.findByUserEmail(userEmail);
-
-        if (user == null || !user.getUserName().equals(userName)
-                || !user.getUserDateOfBirth().equals(userDateOfBirth)) {
+        if (user == null || !user.getUserName().equals(userName)) {
             return "일치하는 사용자 정보가 없습니다.";
         }
 
-        // OTP 발송
-        emailService.setEmail(userEmail);
-        return "이메일로 인증번호가 전송되었습니다.";
+        // 임시 비밀번호 생성
+        String tempPassword = generateValidRandomPassword();
+        user = user.toBuilder()
+                .userPassword(passwordEncoder.encode(tempPassword))
+                .build();
+        userRepository.save(user);
+
+        // 임시 비밀번호 이메일 전송
+        emailService.sendTemporaryPassword(userEmail, tempPassword);
+
+        return "임시 비밀번호가 이메일로 전송되었습니다.";
     }
 
-    /**
-     * 📌 **OTP 검증 및 비밀번호 재설정 처리**
-     * - 사용자가 OTP를 입력하여 검증을 수행
-     * - 새로운 비밀번호를 입력하면 변경 가능
-     * - 비밀번호 재설정을 원하면 랜덤 비밀번호 생성 후 이메일로 전송
-     */
+    //  비밀번호 재설정
     @Transactional
-    public String verifyOtpAndProcess(String userEmail, String userName, LocalDate userDateOfBirth,
-            String inputOtp, Boolean resetPassword, String newPassword) throws MessagingException {
+    public String resetPassword(String userEmail, String newPassword, String confirmPassword) {
         User user = userRepository.findByUserEmail(userEmail);
 
-        if (user == null || !user.getUserName().equals(userName)
-                || !user.getUserDateOfBirth().equals(userDateOfBirth)) {
+        if (user == null) {
             return "일치하는 사용자 정보가 없습니다.";
         }
 
-        // 📌 OTP 인증 확인
-        if (!emailService.checkAuthNumber(userEmail, inputOtp)) {
-            return "OTP 인증 실패";
+        if (!newPassword.equals(confirmPassword)) {
+            return "새 비밀번호와 확인 비밀번호가 일치하지 않습니다.";
         }
 
-        // 📌 사용자가 직접 새로운 비밀번호 입력한 경우
-        if (newPassword != null) {
-            if (!isValidPassword(newPassword)) {
-                return "비밀번호는 8~16자이며, 영문, 숫자, 특수문자를 포함해야 합니다.";
-            }
-
-            user = user.toBuilder()
-                    .userPassword(passwordEncoder.encode(newPassword))
-                    .build();
-            userRepository.save(user);
-            return "비밀번호가 성공적으로 변경되었습니다.";
+        if (!isValidPassword(newPassword)) {
+            return "비밀번호는 8~16자이며, 영문, 숫자, 특수문자를 포함해야 합니다.";
         }
 
-        // 📌 사용자가 랜덤 비밀번호 재설정을 원하는 경우
-        if (resetPassword != null && resetPassword) {
-            String tempPassword = generateValidRandomPassword();
-            user = user.toBuilder()
-                    .userPassword(passwordEncoder.encode(tempPassword))
-                    .build();
-            userRepository.save(user);
+        user = user.toBuilder()
+                .userPassword(passwordEncoder.encode(newPassword))
+                .build();
+        userRepository.save(user);
 
-            // 📌 이메일로 새 비밀번호 전송
-            emailService.sendMail("noreply@example.com", userEmail, "새 비밀번호 안내",
-                    "새로운 비밀번호: " + tempPassword);
-            return "새로운 비밀번호가 이메일로 전송되었습니다.";
-        }
-
-        return "OTP 인증 성공";
+        return "비밀번호가 성공적으로 변경되었습니다.";
     }
 
-    /**
-     * 📌 **랜덤 비밀번호 생성**
-     * - 비밀번호 규칙을 만족할 때까지 생성 반복
-     */
+    //  랜덤 비밀번호 생성 (비밀번호 규칙 적용)
     private String generateValidRandomPassword() {
         String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
         StringBuilder password;
@@ -315,5 +280,4 @@ public class UserService {
         } while (!isValidPassword(password.toString())); // 규칙 만족할 때까지 반복
         return password.toString();
     }
-
 }

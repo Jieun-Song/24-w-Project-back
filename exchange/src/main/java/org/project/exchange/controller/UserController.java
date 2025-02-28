@@ -132,37 +132,25 @@ public class UserController {
                 .body(ApiResponse.createError("아이디 찾기 실패"));
     }
 
-    /**
-     * 📌 **비밀번호 찾기 (OTP 요청)**
-     */
+    // 비밀번호 찾기 (임시 비밀번호 발급)
     @PostMapping("/find-password")
     public ResponseEntity<ApiResponse<?>> findPassword(@RequestBody FindPasswordRequest request) {
-        // String → LocalDate 변환
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDate birthDate = LocalDate.parse(request.getUserDateOfBirth(), formatter);
-
-        String result = userService.findPassword(
-            request.getUserEmail(),
-            request.getUserName(),
-            birthDate // 변환된 LocalDate 전달
-        );
-
-        return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(null, result));
+        String result = userService.findPassword(request.getUserEmail(), request.getUserName());
+        return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(result, result));
     }
-    /**
-     * 📌 **OTP 검증 및 비밀번호 처리**
-     */
-    @PostMapping("/verify-otp")
-    public ResponseEntity<ApiResponse<?>> verifyOtpAndProcess(
-            @RequestParam String userEmail,
-            @RequestParam String userName,
-            @RequestParam LocalDate userDateOfBirth,
-            @RequestParam String otp,
-            @RequestParam(required = false) Boolean resetPassword,
-            @RequestParam(required = false) String newPassword) throws MessagingException {
 
-        String response = userService.verifyOtpAndProcess(userEmail, userName, userDateOfBirth, otp, resetPassword,
-                newPassword);
+    // 비밀번호 재설정
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponse<?>> resetPassword(@RequestBody Map<String, String> request) {
+        String userEmail = request.get("userEmail");
+        String newPassword = request.get("newPassword");
+        String confirmPassword = request.get("confirmPassword");
+
+        if (userEmail == null || newPassword == null || confirmPassword == null) {
+            return ResponseEntity.badRequest().body(ApiResponse.createError("필수 입력값이 누락되었습니다."));
+        }
+
+        String response = userService.resetPassword(userEmail, newPassword, confirmPassword);
         return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(null, response));
     }
 }
