@@ -49,4 +49,9 @@ public class ProductRepository{
                 .setParameter("listId", listId)
                 .getSingleResult();
     }
+
+    public long countAllProduct() {
+        return (long) em.createQuery("SELECT COUNT(i) FROM Product i")
+                .getSingleResult();
+    }
 }

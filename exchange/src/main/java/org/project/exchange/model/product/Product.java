@@ -37,6 +37,5 @@ public class Product {
         this.name = name;
         this.originPrice = originPrice;
         this.lists = lists;
-
     }
 }
