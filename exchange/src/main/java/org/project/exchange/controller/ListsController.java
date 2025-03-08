@@ -23,9 +23,9 @@ public class ListsController {
 
     //새로운 리스트 추가
     @PostMapping("/add")
-    public ResponseEntity<Lists> createList(@RequestBody CreateRequest requestDto) {
+    public ResponseEntity<ApiResponse<Lists>> createList(@RequestBody ListsRequestDto requestDto) {
         Lists newLists = listsService.createList(requestDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(newLists);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.createSuccessWithMessage(newLists, "리스트 추가 성공"));
     }
 
     //모든 리스트 불러오기
@@ -34,26 +34,26 @@ public class ListsController {
         List<ListsResponseDto> lists = listsService.showAllLists();
         return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(lists, "리스트 조회 성공"));
     }
+    
 
     //특정 리스트 삭제
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Void> deleteList(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> deleteList(@PathVariable Long id) {
         listsService.deleteList(id);
-        return ResponseEntity.noContent().build();//204 No Content반환
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponse.createSuccessWithMessage(null, "리스트 삭제 성공"));
     }
 
     //총금액표시
     @GetMapping("/total/{id}")
-    public ResponseEntity<Double> getTotal(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Double>> getTotal(@PathVariable Long id) {
         double total = listsService.getTotal(id);
-        return ResponseEntity.ok(total);
-    }
-
+      
     //환율 변경
     @PatchMapping("/update/{id}")
     public ResponseEntity<Lists> updateCurrency(@PathVariable Long id, @RequestBody UpdateRequest requestDto) {
         Lists updatedLists = listsService.updateList(id, requestDto);
         return ResponseEntity.ok(updatedLists);
+      return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(updatedLists, "환율 변경 성공"));}
     }
 }
 

@@ -1,15 +1,26 @@
 package org.project.exchange.model.user.Dto;
 
-import lombok.Builder;
-import lombok.Getter;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.*;
 
 @Getter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED) // ✅ Jackson 직렬화 문제 해결
 public class SignUpResponse {
 
-    private final String msg;
+    @JsonProperty("msg")
+    private String msg;
 
-    @Builder
-    public SignUpResponse(String msg) {
-        this.msg = msg;
-    }
+    @JsonProperty("userName")
+    private String userName;
+
+    @JsonProperty("userEmail")
+    private String userEmail;
+
+    @JsonProperty("userGender")
+    private boolean userGender;
+
+    @JsonProperty("userDateOfBirth")
+    private String userDateOfBirth; // "yyyy-MM-dd" 형식
 }
