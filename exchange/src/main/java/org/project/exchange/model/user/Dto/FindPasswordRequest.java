@@ -11,15 +11,13 @@ import lombok.NoArgsConstructor;
 public class FindPasswordRequest {
     private String userEmail;
     private String userName;
-    private LocalDate userDateOfBirth;
     private String inputOtp ;
 
 
     @Builder
-    public FindPasswordRequest(String userEmail, String userName, LocalDate userDateOfBirth) {
+    public FindPasswordRequest(String userEmail, String userName) {
         this.userEmail = userEmail;
         this.userName = userName;
-        this.userDateOfBirth = userDateOfBirth;
     }
     
 }
