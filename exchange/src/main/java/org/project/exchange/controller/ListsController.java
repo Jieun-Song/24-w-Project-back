@@ -23,7 +23,7 @@ public class ListsController {
 
     //새로운 리스트 추가
     @PostMapping("/add")
-    public ResponseEntity<ApiResponse<Lists>> createList(@RequestBody ListsRequestDto requestDto) {
+    public ResponseEntity<ApiResponse<Lists>> createList(@RequestBody CreateRequest requestDto) {
         Lists newLists = listsService.createList(requestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.createSuccessWithMessage(newLists, "리스트 추가 성공"));
     }
@@ -47,13 +47,14 @@ public class ListsController {
     @GetMapping("/total/{id}")
     public ResponseEntity<ApiResponse<Double>> getTotal(@PathVariable Long id) {
         double total = listsService.getTotal(id);
-      
+        return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(total, "총금액 조회 성공"));
+    }
+
     //환율 변경
     @PatchMapping("/update/{id}")
-    public ResponseEntity<Lists> updateCurrency(@PathVariable Long id, @RequestBody UpdateRequest requestDto) {
+    public ResponseEntity<ApiResponse<Lists>> updateCurrency(@PathVariable Long id, @RequestBody UpdateRequest requestDto) {
         Lists updatedLists = listsService.updateList(id, requestDto);
-        return ResponseEntity.ok(updatedLists);
-      return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(updatedLists, "환율 변경 성공"));}
+        return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(updatedLists, "환율 변경 성공"));
     }
 }
 
