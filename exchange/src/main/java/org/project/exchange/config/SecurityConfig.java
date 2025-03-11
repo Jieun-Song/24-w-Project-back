@@ -65,7 +65,7 @@ public class SecurityConfig {
             CorsConfiguration config = new CorsConfiguration();
             config.setAllowedOrigins(Arrays.asList(
                     "http://10.0.2.16", // 안드로이드 에뮬레이터용
-                    "http://192.168.0.1" // 로컬 네트워크 디바이스 테스트용 (IP를 수정하여 사용)
+                    "http://172.16.214.142" // 로컬 네트워크 디바이스 테스트용 (IP를 수정하여 사용)
             ));
             config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS")); // 허용할 HTTP 메서드
             config.setAllowCredentials(true); // 인증 정보 포함 허용
