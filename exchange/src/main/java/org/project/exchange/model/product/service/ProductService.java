@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 public class ProductService {
     private final ProductRepository productRepository;
     private final ListsRepository listsRepository;
-    private final CurrencyRepository currencyRepository;
 
     @Value("${openai.model}")
     private String model;
@@ -38,13 +37,17 @@ public class ProductService {
                 .map(ProductResponseDto::new)
                 .collect(Collectors.toList());
     }
+
     public Product save(ProductRequestDto requestDto) {
         Lists lists = listsRepository.findById(requestDto.getListId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 리스트가 존재하지 않습니다."));
-        Product product = requestDto.toEntity(lists);
+        long productCount = productRepository.countAllProduct()+1;
+        String productName = "상품" + productCount;
+        Product product =new Product(productName, requestDto.getOriginPrice(), lists);
         productRepository.save(product);
         return product;
     }
+
     public Product update(Long productId, ProductRequestDto requestDto) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("상품이 존재하지 않습니다."));
@@ -54,6 +57,10 @@ public class ProductService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 리스트가 존재하지 않습니다."));
         product.setLists(lists);
         productRepository.save(product);
+        /***
+         * 이거 이렇게 save해도 되는지,, update 다시
+         * update repository에 update 메서드 만들어야할듯
+         */
         return product;
     }
 

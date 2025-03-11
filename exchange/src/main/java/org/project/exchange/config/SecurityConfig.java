@@ -26,11 +26,13 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final AuthenticationEntryPoint entryPoint;
 
-    private final String[] allowedUrls = { "/api/auth/**",
-            "/api/v1/**", "/api/auth/signup/otp", "/api/v1/**",
-            "/api/lists","/api/lists/**","/api/lists/add","/api/lists/delete/**","/api/lists/total/**",
+    private final String[] allowedUrls = {  "/api/auth/**", "/api/auth/signin", "/api/auth/signup", "/api/auth/kakao/signin",
+            "/api/v1/**", "/api/auth/signup/otp", "/api/auth/signup/otp/check", "/api/v1/**",
+            "/api/lists","/api/lists/**","/api/lists/add","/api/lists/delete/**","/api/lists/total/**", "/api/lists/update/**",
             "/api/currency","/api/currency/import",
-            "/api/products/add", "/api/products", "/api/products/**","/api/products/add/**"}; // 허용할 URL 목록
+            "/api/products/add", "/api/products", "/api/products/**","/api/products/add/**"
+
+    }; // 허용할 URL 목록
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -63,7 +65,7 @@ public class SecurityConfig {
             CorsConfiguration config = new CorsConfiguration();
             config.setAllowedOrigins(Arrays.asList(
                     "http://10.0.2.16", // 안드로이드 에뮬레이터용
-                    "http://192.168.0.1" // 로컬 네트워크 디바이스 테스트용 (IP를 수정하여 사용)
+                    "http://172.16.214.142" // 로컬 네트워크 디바이스 테스트용 (IP를 수정하여 사용)
             ));
             config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS")); // 허용할 HTTP 메서드
             config.setAllowCredentials(true); // 인증 정보 포함 허용

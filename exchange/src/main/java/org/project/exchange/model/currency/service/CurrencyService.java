@@ -30,19 +30,12 @@ public class CurrencyService {
     private final CurrencyApiProperties currencyApiProperties;
 
     public List<Currency> fetchAndSaveCurrency() {
-        /**
-         * 할 것
-         * 오늘의 요일 구해서 만약 주말이면 금요일 날짜 반환
-         * 만약 현재 시간이 11시 전이면 어제 날짜 반환
-         *
-         */
         LocalDate myDate = LocalDate.now();
         LocalTime myTime = LocalTime.now();
         DayOfWeek dayOfWeek = myDate.getDayOfWeek();
         if (dayOfWeek == DayOfWeek.SATURDAY || myTime.isBefore(LocalTime.of(11, 0))) {
             myDate = myDate.minusDays(1);
-        }
-        else if (dayOfWeek == DayOfWeek.SUNDAY) {
+        } else if (dayOfWeek == DayOfWeek.SUNDAY) {
             myDate = myDate.minusDays(2);
         }
         String formatedNow = myDate.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
@@ -64,14 +57,16 @@ public class CurrencyService {
                                         return webClient.get()
                                                 .uri(redirectUri)
                                                 .retrieve()
-                                                .bodyToMono(new ParameterizedTypeReference<List<CurrencyResponseDto>>() {});
+                                                .bodyToMono(new ParameterizedTypeReference<List<CurrencyResponseDto>>() {
+                                                });
                                     } catch (Exception e) {
                                         log.error("리다이렉트 URL 변환 실패: {}", e.getMessage());
                                         return Mono.empty();
                                     }
                                 });
                     }
-                    return clientResponse.bodyToMono(new ParameterizedTypeReference<List<CurrencyResponseDto>>() {});
+                    return clientResponse.bodyToMono(new ParameterizedTypeReference<List<CurrencyResponseDto>>() {
+                    });
                 })
                 .block();
 
@@ -80,10 +75,19 @@ public class CurrencyService {
             throw new RuntimeException("API 응답이 null입니다.");
         }
         log.info(responseDtoList.toString());
-        List<Currency> currencyList = responseDtoList.stream()
-                .map(CurrencyResponseDto::toEntity)
-                .collect(Collectors.toList());
-        currencyRepository.deleteAll();
+        List<Currency> currencyList;
+        try {
+            currencyList = responseDtoList.stream()
+                    .map(dto -> Currency.builder()
+                            .curUnit(dto.getCurUnit())
+                            .dealBasR(getParsedDealBasR(dto.getDealBasR()))
+                            .curNm(dto.getCurNm())
+                            .build())
+                    .collect(Collectors.toList());
+        } catch (NumberFormatException ex) {
+            log.error("API 응답 데이터를 파싱하는 중 오류가 발생했습니다. URL: {}", url, ex);
+            throw new RuntimeException("API 응답 데이터를 파싱하는 중 오류가 발생했습니다.", ex);
+        }
         return currencyRepository.saveAll(currencyList);
     }
     
@@ -92,6 +96,15 @@ public class CurrencyService {
         return currencies.stream()
                 .map(CurrencyResponseDto::new)
                 .collect(Collectors.toList());
+    }
+
+    public Double getParsedDealBasR(String dealBasR) {
+        try {
+            return Double.valueOf(dealBasR.replace(",", ""));
+        } catch (NumberFormatException e) {
+            log.error("Failed to parse dealBasR: {}", dealBasR, e);
+            return 0.0; // 기본값 처리
+        }
     }
 
 }
