@@ -35,14 +35,16 @@ public class ListsService {
     public Lists createList(CreateRequest requestDto) {
         User user = userRepository.findByUserId(requestDto.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
-        Currency currency = currencyRepository.findById(requestDto.getCurrencyId())
-                .orElseThrow(() -> new IllegalArgumentException("해당 통화가 존재하지 않습니다."));
+        Currency currencyFrom = currencyRepository.findById(requestDto.getCurrencyIdFrom())
+                .orElseThrow(() -> new IllegalArgumentException("환전이 될 통화가 존재하지 않습니다."));
+        Currency currencyTo = currencyRepository.findById(requestDto.getCurrencyIdTo())
+                .orElseThrow(() -> new IllegalArgumentException("환전이 되는 통화가 존재하지 않습니다."));
 
         LocalDateTime now = LocalDateTime.now();
         long listCount = listsRepository.countAllList()+1;
         String listName = "리스트" + listCount;
 
-        Lists newLists = new Lists(listName,now, requestDto.getLocation(), user, currency);
+        Lists newLists = new Lists(listName,now, requestDto.getLocation(), user, currencyFrom, currencyTo);
 
         return listsRepository.save(newLists);
     }
@@ -64,7 +66,8 @@ public class ListsService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 리스트가 존재하지 않습니다."));
         lists.setName(requestDto.getName());
         lists.setLocation(requestDto.getLocation());
-        lists.setCurrency(currencyRepository.findById(requestDto.getCurrencyId()));
+        lists.setCurrencyFrom(currencyRepository.findById(requestDto.getCurrencyIdFrom()));
+        lists.setCurrencyTo(currencyRepository.findById(requestDto.getCurrencyIdTo()));
         return listsRepository.save(lists);
     }
 }

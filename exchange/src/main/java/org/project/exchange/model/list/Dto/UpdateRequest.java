@@ -4,7 +4,8 @@ import lombok.Getter;
 
 @Getter
 public class UpdateRequest {
-    private Long currencyId; // 통화 ID
+    private Long currencyIdFrom; // 통화 ID
+    private Long currencyIdTo; // 통화 ID
     private String location; // 위치
     private String name; // 리스트 이름
 }
