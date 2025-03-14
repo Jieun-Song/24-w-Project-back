@@ -48,18 +48,24 @@ public class Lists {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "currency_id") // 통화 ID
+    @JoinColumn(name = "currency_id_from") // 통화 ID
     @JsonIgnore
-    private Currency currency;
+    private Currency currencyFrom;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "currency_id_to") // 통화 ID
+    @JsonIgnore
+    private Currency currencyTo;
 
     @Builder
-    public Lists(String name, LocalDateTime createdAt, String location, User user, Currency currency) {
+    public Lists(String name, LocalDateTime createdAt, String location, User user, Currency currencyFrom, Currency currencyTo) {
         this.name = name;
         this.createdAt = createdAt;
         this.location = location;
         this.products = new ArrayList<>();
         this.user = user;
-        this.currency = currency;
+        this.currencyFrom = currencyFrom;
+        this.currencyTo = currencyTo;
     }
 
     public void setDeletedYn(Boolean deletedYn) {
@@ -73,7 +79,10 @@ public class Lists {
         this.location = newLocation;
     }
 
-    public void setCurrency(Optional<Currency> byId) {
-        this.currency = byId.get();
+    public void setCurrencyFrom(Optional<Currency> byId) {
+        this.currencyFrom = byId.get();
+    }
+    public void setCurrencyTo(Optional<Currency> byId) {
+        this.currencyTo = byId.get();
     }
 }

@@ -12,13 +12,15 @@ public class ListsResponseDto {
     private String name;
     private Long userId;
     private LocalDateTime now;
-    private Currency currency;
+    private Currency currencyFrom;
+    private Currency currencyTo;
 
     public ListsResponseDto(Lists lists) {
         this.listId = lists.getListId();
         this.name = lists.getName();
         this.userId = lists.getUser().getUserId();
         this.now = lists.getCreatedAt();
-        this.currency = lists.getCurrency();
+        this.currencyFrom = lists.getCurrencyFrom();
+        this.currencyTo = lists.getCurrencyTo();
     }
 }

@@ -13,13 +13,15 @@ import java.time.LocalDateTime;
 @Slf4j
 public class CreateRequest {
     private Long userId;  // 사용자 ID
-    private Long currencyId; // 통화 ID
+    private Long currencyIdFrom; // 통화 ID
+    private Long currencyIdTo; // 통화 ID
     private LocalDateTime now;
     private String location; // 위치
 
     public CreateRequest(Lists lists) {
         this.userId = lists.getUser().getUserId();
-        this.currencyId = lists.getCurrency().getCurrencyId();
+        this.currencyIdFrom = lists.getCurrencyFrom().getCurrencyId();
+        this.currencyIdTo = lists.getCurrencyTo().getCurrencyId();
         this.now = lists.getCreatedAt();
         this.location = lists.getLocation();
     }
