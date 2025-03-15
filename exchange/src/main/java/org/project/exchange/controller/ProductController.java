@@ -51,6 +51,12 @@ public class ProductController {
         productService.delete(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponse.createSuccessWithMessage(null, "상품 삭제 성공"));}
 
+    @DeleteMapping("/selected")
+    public ResponseEntity<ApiResponse<List<Product>>> deleteSelectedProduct(@RequestBody ProductSelectedDeleteRequestDto requestDto) {
+        productService.deleteByIds(requestDto.getProductIds());
+        List<Product> products = productService.findAll();
+        return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(products, "선택된 상품 삭제 성공"));}
+
     @PostMapping("/image")
     public ApiResponse<List<ImageProductResponseDto>> analyzeImageProduct(@RequestParam("image") MultipartFile imageFile) {
         List<ImageProductResponseDto> productList = null;
