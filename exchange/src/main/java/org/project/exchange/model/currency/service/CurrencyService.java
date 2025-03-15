@@ -4,8 +4,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.project.exchange.config.CurrencyApiProperties;
 import org.project.exchange.model.currency.Currency;
+import org.project.exchange.model.currency.Dto.CurrencyInfoResponseDto;
 import org.project.exchange.model.currency.Dto.CurrencyResponseDto;
 import org.project.exchange.model.currency.repository.CurrencyRepository;
+import org.project.exchange.model.product.Product;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -105,6 +107,12 @@ public class CurrencyService {
             log.error("Failed to parse dealBasR: {}", dealBasR, e);
             return 0.0; // 기본값 처리
         }
+    }
+
+    public CurrencyInfoResponseDto getDealBasR(String curUnit) {
+        Currency currency = currencyRepository.findByCurUnit(curUnit)
+                .orElseThrow(() -> new IllegalArgumentException("해당 통화가 존재하지 않습니다."));
+        return new CurrencyInfoResponseDto(curUnit, currency.getDealBasR());
     }
 
 }

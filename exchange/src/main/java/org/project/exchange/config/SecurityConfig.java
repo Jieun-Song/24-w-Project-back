@@ -30,7 +30,7 @@ public class SecurityConfig {
             "/api/v1/**", "/api/auth/signup/otp", "/api/auth/signup/otp/check", "/api/v1/**",
             "/api/lists","/api/lists/**","/api/lists/add","/api/lists/delete/**","/api/lists/total/**", "/api/lists/update/**",
             "/api/currency","/api/currency/import",
-            "/api/products/add", "/api/products", "/api/products/**","/api/products/add/**"
+            "/api/products/add", "/api/products", "/api/products/**","/api/products/add/**", "/api/currency/**"
 
     }; // 허용할 URL 목록
 
