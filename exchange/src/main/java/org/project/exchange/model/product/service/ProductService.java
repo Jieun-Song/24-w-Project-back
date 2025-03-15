@@ -71,6 +71,14 @@ public class ProductService {
         productRepository.delete(product);
     }
 
+    public void deleteByIds(List<Long> ids) {
+        for (Long id : ids) {
+            productRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("상품이 존재하지 않습니다."));
+        }
+        productRepository.deleteByIds(ids);
+    }
+
     public void deleteByListId(Long listId) {
         productRepository.deleteByListId(listId);
     }

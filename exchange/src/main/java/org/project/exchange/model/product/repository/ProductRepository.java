@@ -38,6 +38,13 @@ public class ProductRepository{
         em.remove(product);
     }
 
+    //선택 product 삭제
+    public void deleteByIds(List<Long> ids) {
+        em.createQuery("DELETE FROM Product p WHERE p.id IN :ids")
+                .setParameter("ids", ids)
+                .executeUpdate();
+    }
+
     public void deleteByListId(Long listId) {
         em.createQuery("DELETE FROM Product p WHERE p.lists.id = :listId")
                 .setParameter("listId", listId)
