@@ -147,6 +147,7 @@ public class UserService {
         return SignInResponse.builder()
                 .userId(user.getUserId())
                 .userName(user.getUserName())
+                .userEmail(user.getUserEmail())
                 .msg("로그인 성공")
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
