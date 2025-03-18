@@ -4,8 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.mail.MessagingException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.project.exchange.global.api.ApiResponse;
+import org.project.exchange.model.user.User;
 import org.project.exchange.model.user.Dto.FindPasswordRequest;
 import org.project.exchange.model.user.Dto.KakaoLoginRequest;
 import org.project.exchange.model.user.Dto.ResetNameResponse;
@@ -13,6 +15,8 @@ import org.project.exchange.model.user.Dto.SignInRequest;
 import org.project.exchange.model.user.Dto.SignInResponse;
 import org.project.exchange.model.user.Dto.SignUpRequest;
 import org.project.exchange.model.user.Dto.SignUpResponse;
+import org.project.exchange.model.user.Dto.UpdateUserInfoRequest;
+import org.project.exchange.model.user.repository.UserRepository;
 import org.project.exchange.model.user.service.UserService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -34,6 +38,7 @@ import java.util.Map;
 public class UserController {
 
     private final UserService userService;
+    private final UserRepository userRepository;
 
     // 회원가입
     @PostMapping("/signup")
@@ -173,5 +178,12 @@ public class UserController {
     @GetMapping("/user-info")
     public ResponseEntity<ApiResponse<?>> getUserInfo(@RequestParam String userEmail) {
         return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(userService.getUserInfo(userEmail), "사용자 정보 조회 성공"));
+    }
+
+    // 회원정보 수정하기 - 생년월일, 이름 (이메일은 변경 불가)
+    @PostMapping("/update-user-info")
+    public ResponseEntity<ApiResponse<?>> updateUserInfo(@Valid @RequestBody UpdateUserInfoRequest request) {
+        String responseMessage = userService.updateUserInfo(request);
+        return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(null, responseMessage));
     }
 }

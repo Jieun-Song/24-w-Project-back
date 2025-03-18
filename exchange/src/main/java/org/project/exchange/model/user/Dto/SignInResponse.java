@@ -1,5 +1,7 @@
 package org.project.exchange.model.user.Dto;
 
+import java.sql.Date;
+
 import lombok.Builder;
 import lombok.Getter;
 
