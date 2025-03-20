@@ -11,6 +11,8 @@ import org.project.exchange.model.user.Dto.SignInRequest;
 import org.project.exchange.model.user.Dto.SignInResponse;
 import org.project.exchange.model.user.Dto.SignUpRequest;
 import org.project.exchange.model.user.Dto.SignUpResponse;
+import org.project.exchange.model.user.Dto.UpdateUserInfoRequest;
+import org.project.exchange.model.user.Dto.UserInfoResponse;
 import org.project.exchange.model.user.KakaoUser;
 import org.project.exchange.model.user.RefreshToken;
 import org.project.exchange.model.user.User;
@@ -23,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.sql.Date;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -147,6 +150,7 @@ public class UserService {
         return SignInResponse.builder()
                 .userId(user.getUserId())
                 .userName(user.getUserName())
+                .userEmail(user.getUserEmail())
                 .msg("로그인 성공")
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
@@ -306,11 +310,61 @@ public class UserService {
                 .build();
     }
 
-    public Object getUserInfo(String userEmail) {
+    // 사용자 정보 조회
+    public UserInfoResponse getUserInfo(String userEmail) {
         User user = userRepository.findByUserEmail(userEmail);
         if (user == null) {
-            return "일치하는 사용자 정보가 없습니다.";
+            return null;
         }
-        return user;
+
+        // `Date` → `String` 변환
+        String formattedDate = user.getUserDateOfBirth().toLocalDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+
+        return UserInfoResponse.builder()
+                .userId(user.getUserId())
+                .userName(user.getUserName())
+                .userDateOfBirth(formattedDate) // yyyy-MM-dd로 변환 후 전달
+                .build();
+    }
+
+    @Transactional
+    public String updateUserInfo(UpdateUserInfoRequest request) {
+        Optional<User> optionalUser = Optional.ofNullable(userRepository.findByUserEmail(request.getUserEmail()));
+
+        if (optionalUser.isEmpty()) {
+            return "사용자를 찾을 수 없습니다.";
+        }
+
+        User user = optionalUser.get();
+        boolean updated = false;
+
+        // 이름 변경
+        if (request.getUserName() != null && !request.getUserName().isEmpty()) {
+            user = user.toBuilder().userName(request.getUserName()).build();
+            updated = true;
+        }
+
+        // 생년월일 변경 (String → Date 변환)
+        if (request.getUserDateOfBirth() != null && !request.getUserDateOfBirth().isEmpty()) {
+            LocalDate birthDate = LocalDate.parse(request.getUserDateOfBirth(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            user = user.toBuilder().userDateOfBirth(Date.valueOf(birthDate)).build();
+            updated = true;
+        }
+
+        // 비밀번호 변경 (선택 사항, 검증 추가)
+        if (request.getUserPassword() != null && !request.getUserPassword().isEmpty()) {
+            if (!isValidPassword(request.getUserPassword())) {
+                return "비밀번호는 8~16자이며, 영문, 숫자, 특수문자를 포함해야 합니다.";
+            }
+            user = user.toBuilder().userPassword(passwordEncoder.encode(request.getUserPassword())).build();
+            updated = true;
+        }
+
+        if (updated) {
+            userRepository.save(user);
+            return "회원정보가 성공적으로 변경되었습니다.";
+        } else {
+            return "변경할 내용이 없습니다.";
+        }
     }
 }
