@@ -26,8 +26,9 @@ public class ListsService {
     private final UserRepository userRepository;
     private final CurrencyRepository currencyRepository;
     private final ProductRepository productRepository;
-    public List<ListsResponseDto> showAllLists() {
-        return listsRepository.findAll()
+    public List<ListsResponseDto> showAllLists(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다."));
+        return listsRepository.findAllByUserId(user)
                 .stream()
                 .map(lists -> new ListsResponseDto(lists))
                 .collect(Collectors.toList());
@@ -52,6 +53,7 @@ public class ListsService {
         Lists lists = listsRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 리스트가 존재하지 않습니다."));
         lists.setDeletedYn(true);
+        listsRepository.save(lists);
     }
 
     public double getTotal(Long id) {
@@ -69,5 +71,11 @@ public class ListsService {
         lists.setCurrencyFrom(currencyRepository.findById(requestDto.getCurrencyIdFrom()));
         lists.setCurrencyTo(currencyRepository.findById(requestDto.getCurrencyIdTo()));
         return listsRepository.save(lists);
+    }
+
+    public ListsResponseDto showList(Long id) {
+        Lists lists = listsRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("해당 리스트가 존재하지 않습니다."));
+        return new ListsResponseDto(lists);
     }
 }

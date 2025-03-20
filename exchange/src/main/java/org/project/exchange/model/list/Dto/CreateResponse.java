@@ -12,11 +12,13 @@ public class CreateResponse {
     private LocalDateTime now;
     private Currency currencyFrom;
     private Currency currencyTo;
+    private String location;
 
     public CreateResponse(Lists lists) {
         this.listId = lists.getListId();
         this.name = lists.getName();
         this.userId = lists.getUser().getUserId();
+        this.location = lists.getLocation();
         this.now = lists.getCreatedAt();
         this.currencyFrom = lists.getCurrencyFrom();
         this.currencyTo = lists.getCurrencyTo();
