@@ -1,6 +1,7 @@
 package org.project.exchange.model.list.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.project.exchange.model.currency.Currency;
 import org.project.exchange.model.currency.repository.CurrencyRepository;
 import org.project.exchange.model.list.Dto.CreateRequest;
@@ -18,6 +19,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -34,7 +36,7 @@ public class ListsService {
                 .collect(Collectors.toList());
     }
     public Lists createList(CreateRequest requestDto) {
-        User user = userRepository.findByUserId(requestDto.getUserId())
+        User user = userRepository.findById(requestDto.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
         Currency currencyFrom = currencyRepository.findById(requestDto.getCurrencyIdFrom())
                 .orElseThrow(() -> new IllegalArgumentException("환전이 될 통화가 존재하지 않습니다."));
@@ -45,7 +47,7 @@ public class ListsService {
         long listCount = listsRepository.countAllList()+1;
         String listName = "리스트" + listCount;
 
-        Lists newLists = new Lists(listName,now, requestDto.getLocation(), user, currencyFrom, currencyTo);
+        Lists newLists = new Lists(listName,now, requestDto. getLocation(), user, currencyFrom, currencyTo);
 
         return listsRepository.save(newLists);
     }

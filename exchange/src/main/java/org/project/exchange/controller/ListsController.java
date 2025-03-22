@@ -24,9 +24,11 @@ import java.util.List;
 public class ListsController {
     private final ListsService listsService;
 
-    //새로운 리스트 추가
+    //새로운 리스트 추가(로그인한 상태에서)
     @PostMapping("/add")
     public ResponseEntity<ApiResponse<Lists>> createList(@RequestBody CreateRequest requestDto) {
+        Long userId = getCurrentUserId();
+        requestDto.setUserId(userId);
         Lists newLists = listsService.createList(requestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.createSuccessWithMessage(newLists, "리스트 추가 성공"));
     }
@@ -90,11 +92,14 @@ public class ListsController {
         log.info("Principal Value: {}", principal);
 
         if (principal instanceof UserDetails userDetails) {
-            return Long.parseLong(userDetails.getUsername()); // userId가 username으로 저장된 경우
+            log.info("Extracted userId (from UserDetails): {}", userDetails.getUsername());
+            return Long.parseLong(userDetails.getUsername()); // 예: "1"
         }
+
         if (principal instanceof String) {
             try {
-                return Long.parseLong((String) principal); // userId가 숫자 형식의 String일 경우 변환
+                log.info("Extracted userId (from String): {}", principal);
+                return Long.parseLong((String) principal); // 예: "1"
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException("유효하지 않은 사용자 ID 형식: " + principal);
             }
@@ -102,6 +107,7 @@ public class ListsController {
 
         throw new IllegalArgumentException("알 수 없는 인증 정보 타입: " + principal.getClass().getName());
     }
+
 
 }
 
