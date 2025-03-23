@@ -3,7 +3,8 @@ package org.project.exchange.model.list.service;
 import lombok.RequiredArgsConstructor;
 import org.project.exchange.model.currency.Currency;
 import org.project.exchange.model.currency.repository.CurrencyRepository;
-import org.project.exchange.model.list.Dto.CreateRequest;
+import org.project.exchange.model.list.Dto.CreateListRequestDto;
+import org.project.exchange.model.list.Dto.CreateListResponseDto;
 import org.project.exchange.model.list.Dto.ListsResponseDto;
 import org.project.exchange.model.list.Dto.UpdateRequest;
 import org.project.exchange.model.list.Lists;
@@ -26,13 +27,15 @@ public class ListsService {
     private final UserRepository userRepository;
     private final CurrencyRepository currencyRepository;
     private final ProductRepository productRepository;
+
     public List<ListsResponseDto> showAllLists() {
         return listsRepository.findAll()
                 .stream()
                 .map(lists -> new ListsResponseDto(lists))
                 .collect(Collectors.toList());
     }
-    public Lists createList(CreateRequest requestDto) {
+
+    public CreateListResponseDto createList(CreateListRequestDto requestDto) {
         User user = userRepository.findByUserId(requestDto.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
         Currency currencyFrom = currencyRepository.findById(requestDto.getCurrencyIdFrom())
@@ -41,13 +44,17 @@ public class ListsService {
                 .orElseThrow(() -> new IllegalArgumentException("환전이 되는 통화가 존재하지 않습니다."));
 
         LocalDateTime now = LocalDateTime.now();
-        long listCount = listsRepository.countAllList()+1;
+        long listCount = listsRepository.countAllListByUser(requestDto.getUserId())+1;
         String listName = "리스트" + listCount;
 
-        Lists newLists = new Lists(listName,now, requestDto.getLocation(), user, currencyFrom, currencyTo);
+        Lists newLists = new Lists(listName,now, requestDto.getLocation(),
+                user, currencyFrom, currencyTo);
 
-        return listsRepository.save(newLists);
+        listsRepository.save(newLists);
+
+        return new CreateListResponseDto(newLists);
     }
+
     public void deleteList(Long id) {
         Lists lists = listsRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 리스트가 존재하지 않습니다."));
