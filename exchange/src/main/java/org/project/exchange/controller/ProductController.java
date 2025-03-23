@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.project.exchange.model.product.Dto.ProductRequestDto;
 import org.project.exchange.model.product.Dto.ProductResponseDto;
 import org.project.exchange.global.api.ApiResponse;
-import org.project.exchange.global.api.ApiResponse;
 import org.project.exchange.model.product.Dto.*;
 import org.project.exchange.model.product.ai.ImageUtils;
 import org.project.exchange.model.product.Product;
@@ -23,8 +22,8 @@ public class ProductController {
     private final ProductService productService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<Product>> createProduct(@RequestBody ProductRequestDto requestDto) {
-        Product newProduct = productService.save(requestDto);
+    public ResponseEntity<ApiResponse<CreateProductResponseDto>> createProduct(@RequestBody CreateProductRequestDto requestDto) {
+        CreateProductResponseDto newProduct = productService.save(requestDto);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.createSuccessWithMessage(newProduct, "상품 등록 성공"));
     }

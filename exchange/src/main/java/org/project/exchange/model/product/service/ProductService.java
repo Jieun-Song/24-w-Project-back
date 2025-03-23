@@ -2,7 +2,6 @@ package org.project.exchange.model.product.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.project.exchange.model.currency.repository.CurrencyRepository;
 import org.project.exchange.model.list.Lists;
 import org.project.exchange.model.list.repository.ListsRepository;
 import org.project.exchange.model.product.Dto.*;
@@ -38,14 +37,24 @@ public class ProductService {
                 .collect(Collectors.toList());
     }
 
-    public Product save(ProductRequestDto requestDto) {
+    public CreateProductResponseDto save(CreateProductRequestDto requestDto) {
         Lists lists = listsRepository.findById(requestDto.getListId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 리스트가 존재하지 않습니다."));
-        long productCount = productRepository.countAllProduct()+1;
-        String productName = "상품" + productCount;
-        Product product =new Product(productName, requestDto.getOriginPrice(), lists);
+
+        long productCount = productRepository.countAllProductByListId(requestDto.getListId())+1;
+
+        String productName;
+
+        if (requestDto.getName() == null || requestDto.getName() == "") {
+            productName = "상품" + productCount;
+        }else {
+            productName = requestDto.getName();
+        }
+
+        Product product = new Product(productName, requestDto.getOriginPrice(), lists);
         productRepository.save(product);
-        return product;
+
+        return new CreateProductResponseDto(product);
     }
 
     public Product update(Long productId, ProductRequestDto requestDto) {

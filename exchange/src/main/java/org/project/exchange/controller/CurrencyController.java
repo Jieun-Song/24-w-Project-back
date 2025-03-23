@@ -29,8 +29,8 @@ public class CurrencyController {
     }
 
     @GetMapping
-    public List<CurrencyResponseDto> findAll() {
-        return currencyService.findAllCurrency();
+    public ResponseEntity<ApiResponse<List<CurrencyResponseDto>>> findAll() {
+        return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(currencyService.findAllCurrency(), "모든 통화 조회 성공"));
     }
 
     @GetMapping("/info/{curUnit}")

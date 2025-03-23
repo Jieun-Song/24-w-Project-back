@@ -3,7 +3,8 @@ package org.project.exchange.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.project.exchange.global.api.ApiResponse;
-import org.project.exchange.model.list.Dto.CreateRequest;
+import org.project.exchange.model.list.Dto.CreateListRequestDto;
+import org.project.exchange.model.list.Dto.CreateListResponseDto;
 import org.project.exchange.model.list.Dto.ListsResponseDto;
 import org.project.exchange.model.list.Dto.UpdateRequest;
 import org.project.exchange.model.list.Lists;
@@ -23,8 +24,9 @@ public class ListsController {
 
     //새로운 리스트 추가
     @PostMapping("/add")
-    public ResponseEntity<ApiResponse<Lists>> createList(@RequestBody CreateRequest requestDto) {
-        Lists newLists = listsService.createList(requestDto);
+    public ResponseEntity<ApiResponse<CreateListResponseDto>> createList(@RequestBody CreateListRequestDto requestDto) {
+
+        CreateListResponseDto newLists = listsService.createList(requestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.createSuccessWithMessage(newLists, "리스트 추가 성공"));
     }
 
