@@ -16,6 +16,7 @@ import org.project.exchange.model.user.Dto.SignInResponse;
 import org.project.exchange.model.user.Dto.SignUpRequest;
 import org.project.exchange.model.user.Dto.SignUpResponse;
 import org.project.exchange.model.user.Dto.UpdateUserInfoRequest;
+import org.project.exchange.model.user.Dto.UserInfoResponse;
 import org.project.exchange.model.user.repository.UserRepository;
 import org.project.exchange.model.user.service.UserService;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -174,11 +175,28 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(response, response.getMsg()));
     }
     
-    // 아이디로 사용자 정보 조회
+    // // 아이디로 사용자 정보 조회
+    // @GetMapping("/user-info")
+    // public ResponseEntity<ApiResponse<?>> getUserInfo(@RequestParam String userEmail) {
+    //     return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(userService.getUserInfo(userEmail), "사용자 정보 조회 성공"));
+    // }
+
     @GetMapping("/user-info")
-    public ResponseEntity<ApiResponse<?>> getUserInfo(@RequestParam String userEmail) {
-        return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(userService.getUserInfo(userEmail), "사용자 정보 조회 성공"));
+    public ResponseEntity<ApiResponse<?>> getUserInfo(@RequestHeader("Authorization") String token) {
+        // 토큰 앞에 "Bearer " 붙어 있다면 제거
+        if (token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+
+        try {
+            UserInfoResponse userInfo = userService.getUserInfoFromToken(token);
+            return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(userInfo, "사용자 정보 조회 성공"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.createError("토큰 인증 실패 또는 사용자 조회 실패: " + e.getMessage()));
+        }
     }
+
 
     // 회원정보 수정하기 - 생년월일, 이름 (이메일은 변경 불가)
     @PostMapping("/update-user-info")
