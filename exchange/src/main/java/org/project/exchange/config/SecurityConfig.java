@@ -26,7 +26,8 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final AuthenticationEntryPoint entryPoint;
 
-    private final String[] allowedUrls = {  "/api/auth/**", "/api/auth/signin", "/api/auth/signup", "/api/auth/kakao/signin",
+    private final String[] allowedUrls = {  "/api/auth/find-id", "/api/auth/find-password", 
+                    "/api/auth/signin", "/api/auth/signup", "/api/auth/kakao/signin",
             "/api/v1/**", "/api/auth/signup/otp", "/api/auth/signup/otp/check", "/api/v1/**",
             "/api/lists","/api/lists/**","/api/lists/add","/api/lists/delete/**","/api/lists/total/**", "/api/lists/update/**",
             "/api/currency","/api/currency/import",
