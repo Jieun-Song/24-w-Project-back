@@ -3,10 +3,7 @@ package org.project.exchange.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.project.exchange.global.api.ApiResponse;
-import org.project.exchange.model.list.Dto.CreateListRequestDto;
-import org.project.exchange.model.list.Dto.CreateListResponseDto;
-import org.project.exchange.model.list.Dto.ListsResponseDto;
-import org.project.exchange.model.list.Dto.UpdateRequest;
+import org.project.exchange.model.list.Dto.*;
 import org.project.exchange.model.list.Lists;
 import org.project.exchange.model.list.service.ListsService;
 import org.springframework.http.HttpStatus;
@@ -26,7 +23,15 @@ public class ListsController {
     @PostMapping("/add")
     public ResponseEntity<ApiResponse<CreateListResponseDto>> createList(@RequestBody CreateListRequestDto requestDto) {
 
-        CreateListResponseDto newLists = listsService.createList(requestDto);
+        CreateListResponseDto newLists = listsService.save(requestDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.createSuccessWithMessage(newLists, "리스트 추가 성공"));
+    }
+
+    //새로운 리스트 추가 + 이름
+    @PostMapping("/add/name")
+    public ResponseEntity<ApiResponse<CreateListResponseDto>> createListWithName(@RequestBody CreateListWithNameRequestDto requestDto) {
+
+        CreateListResponseDto newLists = listsService.saveWithName(requestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.createSuccessWithMessage(newLists, "리스트 추가 성공"));
     }
 
