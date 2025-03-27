@@ -16,6 +16,7 @@ public class CreateRequest {
     private String location; // 위치
 
     public CreateRequest(Lists lists) {
+        this.userId = lists.getUser().getUserId();
         this.currencyIdFrom = lists.getCurrencyFrom().getCurrencyId();
         this.currencyIdTo = lists.getCurrencyTo().getCurrencyId();
         this.location = lists.getLocation();

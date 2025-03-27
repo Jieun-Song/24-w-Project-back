@@ -14,10 +14,15 @@ public class SignUpRequest {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private final Date userDateOfBirth;
+
     private final boolean userGender;
+
     private final String userEmail;
+
     private final String userPassword;
+
     private String otp;
+    
     private List<Boolean> agreedTerms;
 
     @Builder

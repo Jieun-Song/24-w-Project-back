@@ -3,9 +3,7 @@ package org.project.exchange.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.project.exchange.global.api.ApiResponse;
-import org.project.exchange.model.list.Dto.CreateRequest;
-import org.project.exchange.model.list.Dto.ListsResponseDto;
-import org.project.exchange.model.list.Dto.UpdateRequest;
+import org.project.exchange.model.list.Dto.*;
 import org.project.exchange.model.list.Lists;
 import org.project.exchange.model.list.service.ListsService;
 import org.springframework.http.HttpStatus;
@@ -33,6 +31,16 @@ public class ListsController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.createSuccessWithMessage(newLists, "리스트 추가 성공"));
     }
 
+    //새로운 리스트 추가 + 이름
+    @PostMapping("/add/name")
+    public ResponseEntity<ApiResponse<CreateListResponseDto>> createListWithName(@RequestBody CreateListWithNameRequestDto requestDto) {
+
+        CreateListResponseDto newLists = listsService.saveWithName(requestDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.createSuccessWithMessage(newLists, "리스트 추가 성공"));
+    }
+
+    //모든 리스트 불러오기
+    @GetMapping
     //모든 리스트 불러오기(로그인 안해도 걍 가능)
 //    @GetMapping()
 //    public ResponseEntity<ApiResponse<List<ListsResponseDto>>> getAllLists(

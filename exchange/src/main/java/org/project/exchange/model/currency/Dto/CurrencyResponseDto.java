@@ -13,9 +13,7 @@ public class CurrencyResponseDto {
     private Long currencyId;
     @JsonProperty("cur_unit")
     private String curUnit;
-    @JsonProperty("deal_bas_r")
     private String dealBasR;
-    @JsonProperty("cur_nm")
     private String curNm;
 
     public CurrencyResponseDto(Currency currency) {
