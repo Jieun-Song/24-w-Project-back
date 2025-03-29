@@ -52,19 +52,24 @@ public class ProductRepository{
     }
 
     public double sumOriginPrice(Long listId) {
-        return (double) em.createQuery("SELECT SUM(p.originPrice) FROM Product p WHERE p.lists.id = :listId")
+        Double sum = (Double) em.createQuery(
+                        "SELECT SUM(p.originPrice) FROM Product p WHERE p.lists.id = :listId")
                 .setParameter("listId", listId)
                 .getSingleResult();
+        return sum != null ? sum : 0.0;
     }
 
     public long countAllProduct() {
-        return (long) em.createQuery("SELECT COUNT(i) FROM Product i")
+        Long count = (Long) em.createQuery("SELECT COUNT(i) FROM Product i")
                 .getSingleResult();
+        return count != null ? count : 0L;
     }
 
     public long countAllProductByListId(Long listId) {
-        return (long) em.createQuery("SELECT COUNT(i) FROM Product i WHERE i.lists.listId = :listId")
+        Long count = (Long) em.createQuery(
+                        "SELECT COUNT(i) FROM Product i WHERE i.lists.id = :listId")
                 .setParameter("listId", listId)
                 .getSingleResult();
+        return count != null ? count : 0L;
     }
 }

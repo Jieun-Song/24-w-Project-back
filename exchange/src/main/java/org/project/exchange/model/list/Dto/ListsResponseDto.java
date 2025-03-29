@@ -13,8 +13,8 @@ public class ListsResponseDto {
     private Long userId;
     private String location;
     private LocalDateTime createdAt;
-    private Currency currencyFrom;
-    private Currency currencyTo;
+    private Long currencyFromId;
+    private Long currencyToId;
     private Boolean deletedYn;
 
     public ListsResponseDto(Lists lists) {
@@ -23,8 +23,8 @@ public class ListsResponseDto {
         this.userId = lists.getUser().getUserId();
         this.createdAt = lists.getCreatedAt();
         this.location = lists.getLocation();
-        this.currencyFrom = lists.getCurrencyFrom();
-        this.currencyTo = lists.getCurrencyTo();
+        this.currencyFromId = lists.getCurrencyFrom().getCurrencyId();
+        this.currencyToId = lists.getCurrencyTo().getCurrencyId();
         this.deletedYn = lists.getDeletedYn();
     }
 }
