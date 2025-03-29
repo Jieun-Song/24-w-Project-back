@@ -30,6 +30,7 @@ import lombok.extern.slf4j.Slf4j; // 📌 log 사용을 위한 Lombok 어노테�
 import java.sql.Date;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.Map;
 
 @Slf4j
@@ -175,12 +176,7 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(response, response.getMsg()));
     }
     
-    // // 아이디로 사용자 정보 조회
-    // @GetMapping("/user-info")
-    // public ResponseEntity<ApiResponse<?>> getUserInfo(@RequestParam String userEmail) {
-    //     return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(userService.getUserInfo(userEmail), "사용자 정보 조회 성공"));
-    // }
-
+    // 아이디로 사용자 정보 조회
     @GetMapping("/user-info")
     public ResponseEntity<ApiResponse<?>> getUserInfo(@RequestHeader("Authorization") String token) {
         // 토큰 앞에 "Bearer " 붙어 있다면 제거
@@ -201,7 +197,17 @@ public class UserController {
     // 회원정보 수정하기 - 생년월일, 이름 (이메일은 변경 불가)
     @PostMapping("/update-user-info")
     public ResponseEntity<ApiResponse<?>> updateUserInfo(@Valid @RequestBody UpdateUserInfoRequest request) {
-        String responseMessage = userService.updateUserInfo(request);
-        return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(null, responseMessage));
+        try {
+            UserInfoResponse updatedUser = userService.updateUserInfo(request);
+
+            if (updatedUser == null) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(ApiResponse.createError("회원정보 갱신 결과가 null입니다."));
+            }
+
+            return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(updatedUser, "회원정보가 성공적으로 변경되었습니다."));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(ApiResponse.createError(e.getMessage()));
+        }
     }
-}
+} 
