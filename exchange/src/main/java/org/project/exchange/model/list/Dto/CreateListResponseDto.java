@@ -16,15 +16,17 @@ public class CreateListResponseDto {
     private String name;
     private Long userId;
     private LocalDateTime now;
-    private Long currencyFrom;
-    private Long currencyTo;
+    private Currency currencyFrom;
+    private Currency currencyTo;
+    private String location;
 
     public CreateListResponseDto(Lists lists) {
         this.listId = lists.getListId();
         this.name = lists.getName();
         this.userId = lists.getUser().getUserId();
+        this.location = lists.getLocation();
         this.now = lists.getCreatedAt();
-        this.currencyFrom = lists.getCurrencyFrom().getCurrencyId();
-        this.currencyTo = lists.getCurrencyTo().getCurrencyId();
+        this.currencyFrom = lists.getCurrencyFrom();
+        this.currencyTo = lists.getCurrencyTo();
     }
 }

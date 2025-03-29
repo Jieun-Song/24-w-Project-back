@@ -20,7 +20,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT CASE WHEN COUNT(u) > 0 THEN TRUE ELSE FALSE END FROM User u WHERE LOWER(u.userEmail) = LOWER(:userEmail)")
     boolean existsByUserEmail(@Param("userEmail") String userEmail);
 
-    Optional<User> findByUserId(Long userId);
+    @Query("SELECT u FROM User u WHERE u.userId = :userId")
+    Optional<User> findByUserId(@Param("userId") Long userId);
 
     User findByUserNameAndUserDateOfBirth(String userName, LocalDate userDateOfBirth);
 

@@ -1,6 +1,7 @@
 package org.project.exchange.model.list.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.project.exchange.model.currency.Currency;
 import org.project.exchange.model.currency.repository.CurrencyRepository;
 import org.project.exchange.model.list.Dto.*;
@@ -16,6 +17,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -24,16 +26,15 @@ public class ListsService {
     private final UserRepository userRepository;
     private final CurrencyRepository currencyRepository;
     private final ProductRepository productRepository;
-
-    public List<ListsResponseDto> showAllLists() {
-        return listsRepository.findAll()
+    public List<ListsResponseDto> showAllLists(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다."));
+        return listsRepository.findAllByUserId(user)
                 .stream()
-                .map(lists -> new ListsResponseDto(lists))
+                .map(ListsResponseDto::new)
                 .collect(Collectors.toList());
     }
-
-    public CreateListResponseDto save(CreateListRequestDto requestDto) {
-        User user = userRepository.findByUserId(requestDto.getUserId())
+    public CreateListResponseDto createList(CreateListRequestDto requestDto) {
+        User user = userRepository.findById(requestDto.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
         Currency currencyFrom = currencyRepository.findById(requestDto.getCurrencyIdFrom())
                 .orElseThrow(() -> new IllegalArgumentException("환전이 될 통화가 존재하지 않습니다."));
@@ -44,8 +45,7 @@ public class ListsService {
         long listCount = listsRepository.countAllListByUser(requestDto.getUserId())+1;
         String listName = "리스트" + listCount;
 
-        Lists newLists = new Lists(listName,now, requestDto.getLocation(),
-                user, currencyFrom, currencyTo);
+        Lists newLists = new Lists(listName,now, requestDto. getLocation(), user, currencyFrom, currencyTo);
 
         listsRepository.save(newLists);
 
@@ -74,6 +74,7 @@ public class ListsService {
         Lists lists = listsRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 리스트가 존재하지 않습니다."));
         lists.setDeletedYn(true);
+        listsRepository.save(lists);
     }
 
     public double getTotal(Long id) {
@@ -91,5 +92,11 @@ public class ListsService {
         lists.setCurrencyFrom(currencyRepository.findById(requestDto.getCurrencyIdFrom()));
         lists.setCurrencyTo(currencyRepository.findById(requestDto.getCurrencyIdTo()));
         return listsRepository.save(lists);
+    }
+
+    public ListsResponseDto showList(Long id) {
+        Lists lists = listsRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("해당 리스트가 존재하지 않습니다."));
+        return new ListsResponseDto(lists);
     }
 }

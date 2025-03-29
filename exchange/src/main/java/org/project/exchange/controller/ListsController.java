@@ -8,6 +8,9 @@ import org.project.exchange.model.list.Lists;
 import org.project.exchange.model.list.service.ListsService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,11 +22,12 @@ import java.util.List;
 public class ListsController {
     private final ListsService listsService;
 
-    //새로운 리스트 추가
+    //새로운 리스트 추가(로그인한 상태에서)
     @PostMapping("/add")
     public ResponseEntity<ApiResponse<CreateListResponseDto>> createList(@RequestBody CreateListRequestDto requestDto) {
-
-        CreateListResponseDto newLists = listsService.save(requestDto);
+        Long userId = getCurrentUserId();
+        requestDto.setUserId(userId);
+        CreateListResponseDto newLists = listsService.createList(requestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.createSuccessWithMessage(newLists, "리스트 추가 성공"));
     }
 
@@ -35,16 +39,35 @@ public class ListsController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.createSuccessWithMessage(newLists, "리스트 추가 성공"));
     }
 
-    //모든 리스트 불러오기
-    @GetMapping
+    //모든 리스트 불러오기(로그인 안해도 걍 가능)
+//    @GetMapping()
+//    public ResponseEntity<ApiResponse<List<ListsResponseDto>>> getAllLists(
+//            @RequestParam(required = false) Long userId) {
+//        List<ListsResponseDto> lists;
+//        if (userId != null) {
+//            lists = listsService.showAllLists(userId);
+//        } else {
+//            throw new IllegalArgumentException("유저 ID가 필요합니다.");
+//        }
+//        return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(lists, "리스트 조회 성공"));
+//    }
+    // 현재 로그인한 사용자의 모든 리스트 조회 (JWT 인증 필수)
+    @GetMapping()
     public ResponseEntity<ApiResponse<List<ListsResponseDto>>> getAllLists() {
-        List<ListsResponseDto> lists = listsService.showAllLists();
+        Long userId = getCurrentUserId(); // 현재 로그인한 사용자 ID 가져오기
+        List<ListsResponseDto> lists = listsService.showAllLists(userId);
         return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(lists, "리스트 조회 성공"));
     }
-    
+
+    //특정 리스트 불러오기
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<ListsResponseDto>> getLists(@PathVariable Long id) {
+        ListsResponseDto lists = listsService.showList(id);
+        return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(lists, "리스트 조회 성공"));
+    }
 
     //특정 리스트 삭제
-    @DeleteMapping("/delete/{id}")
+    @PatchMapping("/delete/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteList(@PathVariable Long id) {
         listsService.deleteList(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponse.createSuccessWithMessage(null, "리스트 삭제 성공"));
@@ -63,5 +86,34 @@ public class ListsController {
         Lists updatedLists = listsService.updateList(id, requestDto);
         return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(updatedLists, "환율 변경 성공"));
     }
+
+    private Long getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new IllegalArgumentException("유효한 인증 정보가 없습니다.");
+        }
+        Object principal = authentication.getPrincipal();
+
+        log.info("Principal Type: {}", principal.getClass().getName());
+        log.info("Principal Value: {}", principal);
+
+        if (principal instanceof UserDetails userDetails) {
+            log.info("Extracted userId (from UserDetails): {}", userDetails.getUsername());
+            return Long.parseLong(userDetails.getUsername()); // 예: "1"
+        }
+
+        if (principal instanceof String) {
+            try {
+                log.info("Extracted userId (from String): {}", principal);
+                return Long.parseLong((String) principal); // 예: "1"
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("유효하지 않은 사용자 ID 형식: " + principal);
+            }
+        }
+
+        throw new IllegalArgumentException("알 수 없는 인증 정보 타입: " + principal.getClass().getName());
+    }
+
+
 }
 

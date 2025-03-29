@@ -2,7 +2,11 @@ package org.project.exchange.model.list.repository;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import org.project.exchange.model.list.Lists;
+import org.project.exchange.model.user.User;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
 public class ListsRepositoryImpl implements ListsRepositoryCustom {
@@ -16,6 +20,14 @@ public class ListsRepositoryImpl implements ListsRepositoryCustom {
                     .getSingleResult();
 
     }
+
+    @Override
+    public List<Lists> findAllByUserId(User user) {
+        return em.createQuery("SELECT i FROM Lists i WHERE i.user = :user", Lists.class)
+                .setParameter("user", user)
+                .getResultList();
+    }
+
 }
 
 
