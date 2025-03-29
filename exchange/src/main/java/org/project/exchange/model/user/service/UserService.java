@@ -310,30 +310,13 @@ public class UserService {
                 .build();
     }
 
-    // 사용자 정보 조회
-    public UserInfoResponse getUserInfo(String userEmail) {
-        User user = userRepository.findByUserEmail(userEmail);
-        if (user == null) {
-            return null;
-        }
-
-        // `Date` → `String` 변환
-        String formattedDate = user.getUserDateOfBirth().toLocalDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-
-        return UserInfoResponse.builder()
-                .userId(user.getUserId())
-                .userEmail(userEmail)
-                .userName(user.getUserName())
-                .userDateOfBirth(formattedDate) // yyyy-MM-dd로 변환 후 전달
-                .build();
-    }
-
+    // 개인정보 수정
     @Transactional
-    public String updateUserInfo(UpdateUserInfoRequest request) {
+    public UserInfoResponse updateUserInfo(UpdateUserInfoRequest request) {
         Optional<User> optionalUser = Optional.ofNullable(userRepository.findByUserEmail(request.getUserEmail()));
 
         if (optionalUser.isEmpty()) {
-            return "사용자를 찾을 수 없습니다.";
+            throw new RuntimeException("사용자를 찾을 수 없습니다.");
         }
 
         User user = optionalUser.get();
@@ -345,17 +328,18 @@ public class UserService {
             updated = true;
         }
 
-        // 생년월일 변경 (String → Date 변환)
+        // 생년월일 변경
         if (request.getUserDateOfBirth() != null && !request.getUserDateOfBirth().isEmpty()) {
-            LocalDate birthDate = LocalDate.parse(request.getUserDateOfBirth(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            LocalDate birthDate = LocalDate.parse(request.getUserDateOfBirth(),
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd"));
             user = user.toBuilder().userDateOfBirth(Date.valueOf(birthDate)).build();
             updated = true;
         }
 
-        // 비밀번호 변경 (선택 사항, 검증 추가)
+        // 비밀번호 변경
         if (request.getUserPassword() != null && !request.getUserPassword().isEmpty()) {
             if (!isValidPassword(request.getUserPassword())) {
-                return "비밀번호는 8~16자이며, 영문, 숫자, 특수문자를 포함해야 합니다.";
+                throw new IllegalArgumentException("비밀번호는 8~16자이며, 영문, 숫자, 특수문자를 포함해야 합니다.");
             }
             user = user.toBuilder().userPassword(passwordEncoder.encode(request.getUserPassword())).build();
             updated = true;
@@ -363,12 +347,24 @@ public class UserService {
 
         if (updated) {
             userRepository.save(user);
-            return "회원정보가 성공적으로 변경되었습니다.";
-        } else {
-            return "변경할 내용이 없습니다.";
         }
-    }
 
+        if (!updated) {
+            // 수정된 항목이 없으면, 그대로 현재 상태로 DTO를 반환
+            log.info("ℹ️ 사용자 정보 변경 없음. 현재 정보 반환.");
+        }
+
+        // 항상 최신 상태 반환
+        user = userRepository.findById(user.getUserId()).orElseThrow(() -> new RuntimeException("저장된 사용자 없음"));
+
+        return UserInfoResponse.builder()
+                .userId(user.getUserId())
+                .userEmail(user.getUserEmail())
+                .userName(user.getUserName())
+                .userDateOfBirth(user.getUserDateOfBirth().toLocalDate().toString())
+                .build();
+
+    }
 
     // 사용자 정보 조회 (토큰)
     @Transactional(readOnly = true)
