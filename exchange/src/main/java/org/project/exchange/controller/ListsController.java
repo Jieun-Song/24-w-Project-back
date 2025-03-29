@@ -24,10 +24,10 @@ public class ListsController {
 
     //새로운 리스트 추가(로그인한 상태에서)
     @PostMapping("/add")
-    public ResponseEntity<ApiResponse<Lists>> createList(@RequestBody CreateRequest requestDto) {
+    public ResponseEntity<ApiResponse<CreateListResponseDto>> createList(@RequestBody CreateListRequestDto requestDto) {
         Long userId = getCurrentUserId();
         requestDto.setUserId(userId);
-        Lists newLists = listsService.createList(requestDto);
+        CreateListResponseDto newLists = listsService.createList(requestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.createSuccessWithMessage(newLists, "리스트 추가 성공"));
     }
 
@@ -39,8 +39,6 @@ public class ListsController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.createSuccessWithMessage(newLists, "리스트 추가 성공"));
     }
 
-    //모든 리스트 불러오기
-    @GetMapping
     //모든 리스트 불러오기(로그인 안해도 걍 가능)
 //    @GetMapping()
 //    public ResponseEntity<ApiResponse<List<ListsResponseDto>>> getAllLists(

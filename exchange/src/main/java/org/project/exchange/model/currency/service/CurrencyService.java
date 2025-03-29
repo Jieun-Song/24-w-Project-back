@@ -7,7 +7,6 @@ import org.project.exchange.model.currency.Currency;
 import org.project.exchange.model.currency.Dto.CurrencyInfoResponseDto;
 import org.project.exchange.model.currency.Dto.CurrencyResponseDto;
 import org.project.exchange.model.currency.repository.CurrencyRepository;
-import org.project.exchange.model.product.Product;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,7 +53,7 @@ public class CurrencyService {
                         return Mono.justOrEmpty(clientResponse.headers().asHttpHeaders().getLocation())
                                 .flatMap(location -> {
                                     try {
-                                        URI redirectUri = location.isAbsolute() ? location : new URI("https://www.koreaexim.go.kr" + location.toString());
+                                        URI redirectUri = location.isAbsolute() ? location : new URI("https://www.koreaexim.go.kr" + location);
                                         log.info("리다이렉트 URL: {}", redirectUri);
                                         return webClient.get()
                                                 .uri(redirectUri)
@@ -72,11 +71,17 @@ public class CurrencyService {
                 })
                 .block();
 
-        if (responseDtoList == null) {
-            log.error("API 응답이 null입니다. URL: {}", url);
-            throw new RuntimeException("API 응답이 null입니다.");
+        if (responseDtoList == null || responseDtoList.isEmpty()) {
+            log.error("API 응답이 비어있습니다. URL: {}", url);
+            throw new RuntimeException("API 응답이 비어있습니다.");
         }
-        log.info(responseDtoList.toString());
+
+        for (CurrencyResponseDto dto : responseDtoList) {
+            if (dto.getDealBasR() == null || dto.getCurUnit() == null || dto.getCurNm() == null) {
+                log.warn("불완전한 데이터가 있습니다: dealBasR={}, curUnit={}, curNm={}", dto.getDealBasR(), dto.getCurUnit(), dto.getCurNm());
+            }
+        }
+//        log.info(responseDtoList.toString());
         List<Currency> currencyList;
         try {
             currencyList = responseDtoList.stream()
@@ -92,7 +97,7 @@ public class CurrencyService {
         }
         return currencyRepository.saveAll(currencyList);
     }
-    
+
     public List<CurrencyResponseDto> findAllCurrency(){
         List<Currency> currencies = currencyRepository.findAll();
         return currencies.stream()

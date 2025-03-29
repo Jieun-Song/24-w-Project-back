@@ -30,10 +30,10 @@ public class ListsService {
         User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다."));
         return listsRepository.findAllByUserId(user)
                 .stream()
-                .map(lists -> new ListsResponseDto(lists))
+                .map(ListsResponseDto::new)
                 .collect(Collectors.toList());
     }
-    public Lists createList(CreateRequest requestDto) {
+    public CreateListResponseDto createList(CreateListRequestDto requestDto) {
         User user = userRepository.findById(requestDto.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
         Currency currencyFrom = currencyRepository.findById(requestDto.getCurrencyIdFrom())

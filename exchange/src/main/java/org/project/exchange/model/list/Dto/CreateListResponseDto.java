@@ -26,7 +26,7 @@ public class CreateListResponseDto {
         this.userId = lists.getUser().getUserId();
         this.location = lists.getLocation();
         this.now = lists.getCreatedAt();
-        this.currencyFrom = lists.getCurrencyFrom().getCurrencyId();
-        this.currencyTo = lists.getCurrencyTo().getCurrencyId();
+        this.currencyFrom = lists.getCurrencyFrom();
+        this.currencyTo = lists.getCurrencyTo();
     }
 }
