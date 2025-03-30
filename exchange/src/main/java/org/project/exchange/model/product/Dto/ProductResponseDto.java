@@ -9,11 +9,13 @@ public class ProductResponseDto {
     private String name;
     private Double originPrice;
     private Long listId;
+    private Boolean deletedYn;
 
     public ProductResponseDto(Product product) {
         this.productId = product.getProductId();
         this.name = product.getName();
         this.originPrice = product.getOriginPrice();
         this.listId = product.getLists().getListId();
+        this.deletedYn = product.getDeletedYn();
     }
 }
