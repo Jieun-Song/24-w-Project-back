@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import java.net.URI;
 import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -69,21 +68,27 @@ public class CurrencyService {
                 log.warn("불완전한 데이터가 있습니다: dealBasR={}, curUnit={}, curNm={}", dto.getDealBasR(), dto.getCurUnit(), dto.getCurNm());
             }
         }
-//        log.info(responseDtoList.toString());
-        List<Currency> currencyList;
-        try {
-            currencyList = responseDtoList.stream()
-                    .map(dto -> Currency.builder()
-                            .curUnit(dto.getCurUnit())
-                            .dealBasR(getParsedDealBasR(dto.getDealBasR()))
-                            .curNm(dto.getCurNm())
-                            .build())
-                    .collect(Collectors.toList());
-        } catch (NumberFormatException ex) {
-            log.error("API 응답 데이터를 파싱하는 중 오류가 발생했습니다. URL: {}", url, ex);
-            throw new RuntimeException("API 응답 데이터를 파싱하는 중 오류가 발생했습니다.", ex);
-        }
-        return currencyRepository.saveAll(currencyList);
+        List<Currency> savedList = responseDtoList.stream()
+                .map(dto -> {
+                    Currency currency = currencyRepository.findByCurUnit(dto.getCurUnit())
+                            .map(existing -> {
+                                // 이미 존재하면 금액만 업데이트
+                                existing.updateDealBasR(getParsedDealBasR(dto.getDealBasR()));
+                                return existing;
+                            })
+                            .orElseGet(() -> {
+                                // 없으면 새로 저장할 Currency 객체 생성
+                                return Currency.builder()
+                                        .curUnit(dto.getCurUnit())
+                                        .dealBasR(getParsedDealBasR(dto.getDealBasR()))
+                                        .curNm(dto.getCurNm())
+                                        .build();
+                            });
+                    return currency;
+                })
+                .collect(Collectors.toList());
+
+        return currencyRepository.saveAll(savedList);
     }
 
     public List<CurrencyResponseDto> findAllCurrency(){

@@ -14,7 +14,6 @@ import java.util.List;
 @Table(name = "currency")
 @Getter
 public class Currency {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "currency_id", nullable = false)
@@ -33,5 +32,9 @@ public class Currency {
         this.curUnit = curUnit;
         this.dealBasR = dealBasR;
         this.curNm = curNm;
+    }
+
+    public void updateDealBasR(Double dealBasR) {
+            this.dealBasR = dealBasR;
     }
 }
