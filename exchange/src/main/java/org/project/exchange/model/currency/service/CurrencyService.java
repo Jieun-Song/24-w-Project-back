@@ -15,9 +15,11 @@ import reactor.core.publisher.Mono;
 
 import java.net.URI;
 import java.time.DayOfWeek;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -48,26 +50,12 @@ public class CurrencyService {
         //공공데이터 API에서 JSON 데이터 가져오기
         List<CurrencyResponseDto> responseDtoList = webClient.get()
                 .uri(url)
-                .exchangeToMono(clientResponse -> {
-                    if (clientResponse.statusCode().is3xxRedirection()) {
-                        return Mono.justOrEmpty(clientResponse.headers().asHttpHeaders().getLocation())
-                                .flatMap(location -> {
-                                    try {
-                                        URI redirectUri = location.isAbsolute() ? location : new URI("https://www.koreaexim.go.kr" + location);
-                                        log.info("리다이렉트 URL: {}", redirectUri);
-                                        return webClient.get()
-                                                .uri(redirectUri)
-                                                .retrieve()
-                                                .bodyToMono(new ParameterizedTypeReference<List<CurrencyResponseDto>>() {
-                                                });
-                                    } catch (Exception e) {
-                                        log.error("리다이렉트 URL 변환 실패: {}", e.getMessage());
-                                        return Mono.empty();
-                                    }
-                                });
-                    }
-                    return clientResponse.bodyToMono(new ParameterizedTypeReference<List<CurrencyResponseDto>>() {
-                    });
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<List<CurrencyResponseDto>>() {})
+                .timeout(Duration.ofSeconds(5))
+                .onErrorResume(e -> {
+                    log.error("API 호출 실패: {}", e.getMessage());
+                    return Mono.just(Collections.emptyList());
                 })
                 .block();
 
