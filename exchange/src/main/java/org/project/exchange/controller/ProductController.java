@@ -29,7 +29,7 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<List<ProductResponseDto>>> getProductByListsId(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<List<ProductResponseDto>>> getProductByListsId(@PathVariable("id") Long id) {
         List<ProductResponseDto> product = productService.findByListsId(id);
         return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(product, "상품 조회 성공"));}
 
