@@ -61,21 +61,21 @@ public class ListsController {
 
     //특정 리스트 불러오기
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<ListsResponseDto>> getLists(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<ListsResponseDto>> getLists(@PathVariable("id") Long id) {
         ListsResponseDto lists = listsService.showList(id);
         return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(lists, "리스트 조회 성공"));
     }
 
     //특정 리스트 삭제
     @PatchMapping("/delete/{id}")
-    public ResponseEntity<ApiResponse<Void>> deleteList(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> deleteList(@PathVariable("id") Long id) {
         listsService.deleteList(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponse.createSuccessWithMessage(null, "리스트 삭제 성공"));
     }
 
     //총금액표시
     @GetMapping("/total/{id}")
-    public ResponseEntity<ApiResponse<Double>> getTotal(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Double>> getTotal(@PathVariable("id") Long id) {
         double total = listsService.getTotal(id);
         return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(total, "총금액 조회 성공"));
     }
