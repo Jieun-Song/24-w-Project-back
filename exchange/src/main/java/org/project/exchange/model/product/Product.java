@@ -3,8 +3,9 @@ package org.project.exchange.model.product;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
-import org.project.exchange.model.currency.Currency;
 import org.project.exchange.model.list.Lists;
+
+import java.time.LocalDateTime;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -27,14 +28,18 @@ public class Product {
     @Column(name = "deleted_yn", nullable = false) // 삭제 여부
     private Boolean deletedYn = false;
 
+    @Column(name = "created_at", nullable = false) // 삭제 여부
+    private LocalDateTime createdAt;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "list_id") // 리스트 ID
     @JsonIgnore
     private Lists lists;
 
     @Builder
-    public Product(String name, Double originPrice, Lists lists) {
+    public Product(String name, LocalDateTime createdAt, Double originPrice, Lists lists) {
         this.name = name;
+        this.createdAt = createdAt;
         this.originPrice = originPrice;
         this.lists = lists;
     }

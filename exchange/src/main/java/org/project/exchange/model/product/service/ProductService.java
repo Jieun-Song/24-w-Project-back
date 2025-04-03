@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -50,8 +51,9 @@ public class ProductService {
         }else {
             productName = requestDto.getName();
         }
+        LocalDateTime createdAt = LocalDateTime.now();
 
-        Product product = new Product(productName, requestDto.getOriginPrice(), lists);
+        Product product = new Product(productName, createdAt, requestDto.getOriginPrice(), lists);
         productRepository.save(product);
 
         return new CreateProductResponseDto(product);

@@ -3,6 +3,8 @@ package org.project.exchange.model.product.Dto;
 import lombok.Getter;
 import org.project.exchange.model.product.Product;
 
+import java.time.LocalDateTime;
+
 @Getter
 public class ProductResponseDto {
     private Long productId;
@@ -10,6 +12,7 @@ public class ProductResponseDto {
     private Double originPrice;
     private Long listId;
     private Boolean deletedYn;
+    private LocalDateTime createdAt;
 
     public ProductResponseDto(Product product) {
         this.productId = product.getProductId();
@@ -17,5 +20,6 @@ public class ProductResponseDto {
         this.originPrice = product.getOriginPrice();
         this.listId = product.getLists().getListId();
         this.deletedYn = product.getDeletedYn();
+        this.createdAt = product.getCreatedAt();
     }
 }
