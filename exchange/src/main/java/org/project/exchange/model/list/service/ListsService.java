@@ -84,14 +84,15 @@ public class ListsService {
     }
 
     //List수정
-    public Lists updateList(Long id, UpdateRequest requestDto) {
-        Lists lists = listsRepository.findById(id)
+    public UpdateResponse updateList(UpdateRequest requestDto) {
+        Lists lists = listsRepository.findById(requestDto.getListId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 리스트가 존재하지 않습니다."));
         lists.setName(requestDto.getName());
         lists.setLocation(requestDto.getLocation());
         lists.setCurrencyFrom(currencyRepository.findById(requestDto.getCurrencyIdFrom()));
         lists.setCurrencyTo(currencyRepository.findById(requestDto.getCurrencyIdTo()));
-        return listsRepository.save(lists);
+        listsRepository.save(lists);
+        return new UpdateResponse(lists);
     }
 
     public ListsResponseDto showList(Long id) {
