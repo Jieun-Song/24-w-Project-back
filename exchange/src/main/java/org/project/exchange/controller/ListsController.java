@@ -81,9 +81,9 @@ public class ListsController {
     }
 
     //환율 변경
-    @PatchMapping("/update/{id}")
-    public ResponseEntity<ApiResponse<Lists>> updateCurrency(@PathVariable Long id, @RequestBody UpdateRequest requestDto) {
-        Lists updatedLists = listsService.updateList(id, requestDto);
+    @PatchMapping("/update")
+    public ResponseEntity<ApiResponse<UpdateResponse>> updateCurrency(@RequestBody UpdateRequest requestDto) {
+        UpdateResponse updatedLists = listsService.updateList(requestDto);
         return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(updatedLists, "환율 변경 성공"));
     }
 
