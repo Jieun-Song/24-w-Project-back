@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 import lombok.RequiredArgsConstructor;
 import org.project.exchange.config.TokenProvider;
+import org.project.exchange.global.api.ApiResponse;
 import org.project.exchange.model.auth.service.EmailService;
 import org.project.exchange.model.auth.service.PermissionService;
 import org.project.exchange.model.user.Dto.ResetNameResponse;
@@ -18,9 +19,14 @@ import org.project.exchange.model.user.RefreshToken;
 import org.project.exchange.model.user.User;
 import org.project.exchange.model.user.repository.RefreshTokenRepository;
 import org.project.exchange.model.user.repository.UserRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+
 import lombok.extern.slf4j.Slf4j; 
 
 import java.sql.Date;
@@ -394,5 +400,27 @@ public class UserService {
                 .userName(user.getUserName())
                 .userDateOfBirth(formattedDate)
                 .build();
+    }
+
+    //회원 탈퇴
+    @Transactional
+    public String deleteUser(String token) {
+        String subject = tokenProvider.validateTokenAndGetSubject(token);
+        String userEmail = subject.split(":")[1];
+
+        User user = userRepository.findByUserEmail(userEmail);
+        if (user == null) {
+            throw new RuntimeException("사용자를 찾을 수 없습니다.");
+        }
+
+        // 1. RefreshToken 먼저 삭제
+        refreshTokenRepository.findById(user.getUserId())
+                .ifPresent(refreshTokenRepository::delete);
+
+        // 2. 연관된 엔티티 삭제는 User 엔티티의 cascade = CascadeType.ALL, orphanRemoval = true 설정으로
+        // 자동 처리됨
+        userRepository.delete(user);
+
+        return "회원 탈퇴 성공";
     }
 }
