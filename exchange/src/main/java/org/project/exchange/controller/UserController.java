@@ -210,4 +210,21 @@ public class UserController {
             return ResponseEntity.badRequest().body(ApiResponse.createError(e.getMessage()));
         }
     }
+
+    // 회원 탈퇴
+    @DeleteMapping("/withdrawal")
+    public ResponseEntity<ApiResponse<?>> withdrawal(@RequestHeader("Authorization") String token) {
+        // 토큰 앞에 "Bearer " 붙어 있다면 제거
+        if (token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+
+        try {
+            String response = userService.deleteUser(token);
+            return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(response, "회원 탈퇴 성공"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.createError("토큰 인증 실패 또는 회원 탈퇴 실패: " + e.getMessage()));
+        }
+    }
 } 
