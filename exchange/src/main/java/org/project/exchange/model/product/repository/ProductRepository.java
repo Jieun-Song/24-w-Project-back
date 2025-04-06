@@ -28,14 +28,14 @@ public class ProductRepository{
     }
     //list별 product
     public List<Product> findByListId(Long listId){
-        return em.createQuery("SELECT p FROM Product p WHERE p.lists.id = :listId", Product.class)
+        return em.createQuery("SELECT p FROM Product p WHERE p.lists.id = :listId AND p.deletedYn = false", Product.class)
                 .setParameter("listId", listId)
                 .getResultList();
     }
 
     //특정 product 삭제
     public void delete(Product product){
-        em.remove(product);
+        product.setDeletedYn(true);
     }
 
     //선택 product 삭제
@@ -53,7 +53,7 @@ public class ProductRepository{
 
     public double sumOriginPrice(Long listId) {
         Double sum = (Double) em.createQuery(
-                        "SELECT SUM(p.originPrice) FROM Product p WHERE p.lists.id = :listId")
+                        "SELECT SUM(p.originPrice) FROM Product p WHERE p.lists.id = :listId AND p.deletedYn = false")
                 .setParameter("listId", listId)
                 .getSingleResult();
         return sum != null ? sum : 0.0;
@@ -67,7 +67,7 @@ public class ProductRepository{
 
     public long countAllProductByListId(Long listId) {
         Long count = (Long) em.createQuery(
-                        "SELECT COUNT(i) FROM Product i WHERE i.lists.id = :listId")
+                        "SELECT COUNT(i) FROM Product i WHERE i.lists.id = :listId AND i.deletedYn = false")
                 .setParameter("listId", listId)
                 .getSingleResult();
         return count != null ? count : 0L;
