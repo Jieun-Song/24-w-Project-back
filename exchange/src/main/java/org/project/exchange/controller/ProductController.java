@@ -45,12 +45,12 @@ public class ProductController {
         return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(updatedProduct, "상품 수정 성공"));
     }
 
-    @DeleteMapping("/{id}")
+    @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteProduct(@PathVariable Long id) {
         productService.delete(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponse.createSuccessWithMessage(null, "상품 삭제 성공"));}
 
-    @DeleteMapping("/selected")
+    @PatchMapping("/selected")
     public ResponseEntity<ApiResponse<List<Product>>> deleteSelectedProduct(@RequestBody ProductSelectedDeleteRequestDto requestDto) {
         productService.deleteByIds(requestDto.getProductIds());
         List<Product> products = productService.findAll();

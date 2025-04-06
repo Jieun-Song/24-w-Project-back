@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -50,8 +51,9 @@ public class ProductService {
         }else {
             productName = requestDto.getName();
         }
+        LocalDateTime createdAt = LocalDateTime.now();
 
-        Product product = new Product(productName, requestDto.getOriginPrice(), lists);
+        Product product = new Product(productName, createdAt, requestDto.getOriginPrice(), lists);
         productRepository.save(product);
 
         return new CreateProductResponseDto(product);
@@ -80,17 +82,21 @@ public class ProductService {
         productRepository.delete(product);
     }
 
-    public void deleteByIds(List<Long> ids) {
-        for (Long id : ids) {
-            productRepository.findById(id)
-                    .orElseThrow(() -> new IllegalArgumentException("상품이 존재하지 않습니다."));
+    public void deleteByIds(List<Long> productIds) {
+        if (productIds == null || productIds.isEmpty()) {
+            throw new IllegalArgumentException("삭제할 상품 ID 리스트가 없습니다.");
         }
-        productRepository.deleteByIds(ids);
+
+        for (Long id : productIds) {
+            Product product = productRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("상품이 존재하지 않습니다."));
+            productRepository.delete(product);
+        }
     }
 
-    public void deleteByListId(Long listId) {
-        productRepository.deleteByListId(listId);
-    }
+//    public void deleteByListId(Long listId) {
+//        productRepository.deleteByListId(listId);
+//    }
 
     public List<Product> findAll() {
         return productRepository.findAll();
