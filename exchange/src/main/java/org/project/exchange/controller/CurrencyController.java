@@ -23,7 +23,7 @@ public class CurrencyController {
      * 2. 모든 통화 조회
      * 3. 통화 코드를 가지고 특정 통화 조회
      */
-    @PostMapping("/import")
+    @GetMapping("/import")
     public List<Currency> importCurrency() {
         return currencyService.fetchAndSaveCurrency();
     }

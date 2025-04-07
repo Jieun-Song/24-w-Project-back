@@ -6,6 +6,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.project.exchange.model.product.Product;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -27,14 +29,23 @@ public class Currency {
 
     @Column(name = "cur_nm", nullable = false)
     private String curNm;
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDate createdAt;
+
     @Builder
-    public Currency(String curUnit, Double dealBasR, String curNm) {
+    public Currency(String curUnit, Double dealBasR, String curNm, LocalDate createdAt) {
         this.curUnit = curUnit;
         this.dealBasR = dealBasR;
         this.curNm = curNm;
+        this.createdAt = createdAt;
     }
 
     public void updateDealBasR(Double dealBasR) {
             this.dealBasR = dealBasR;
+    }
+
+    public void updateCreatedAt(LocalDate createdAt) {
+        this.createdAt = createdAt;
     }
 }
