@@ -51,7 +51,7 @@ public class CurrencyService {
                 .uri(url)
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<List<CurrencyResponseDto>>() {})
-                .timeout(Duration.ofSeconds(5))
+                .timeout(Duration.ofSeconds(15))
                 .onErrorResume(e -> {
                     log.error("API 호출 실패: {}", e.getMessage());
                     return Mono.just(Collections.emptyList());
