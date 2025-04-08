@@ -59,20 +59,12 @@ public class ProductService {
         return new CreateProductResponseDto(product);
     }
 
-    public Product update(Long productId, ProductRequestDto requestDto) {
-        Product product = productRepository.findById(productId)
+    public ProductResponseDto update(ProductUpdateRequestDto requestDto) {
+        Product product = productRepository.findById(requestDto.getProductId())
                 .orElseThrow(() -> new IllegalArgumentException("상품이 존재하지 않습니다."));
-        product.setName(requestDto.getName());
-        product.setOriginPrice(requestDto.getOriginPrice());
-        Lists lists = listsRepository.findById(requestDto.getListId())
-                .orElseThrow(() -> new IllegalArgumentException("해당 리스트가 존재하지 않습니다."));
-        product.setLists(lists);
+        product.updateNameAndPrice(requestDto.getName(), requestDto.getOriginPrice());
         productRepository.save(product);
-        /***
-         * 이거 이렇게 save해도 되는지,, update 다시
-         * update repository에 update 메서드 만들어야할듯
-         */
-        return product;
+        return new ProductResponseDto(product);
     }
 
 

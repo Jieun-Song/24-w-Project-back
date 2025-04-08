@@ -39,9 +39,9 @@ public class ProductController {
         return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(products, "상품 조회 성공"));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<Product>> updateProduct(@PathVariable Long id, @RequestBody ProductRequestDto requestDto) {
-        Product updatedProduct = productService.update(id, requestDto);
+    @PatchMapping("/update")
+    public ResponseEntity<ApiResponse<ProductResponseDto>> updateProduct(@RequestBody ProductUpdateRequestDto requestDto) {
+        ProductResponseDto updatedProduct = productService.update(requestDto);
         return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(updatedProduct, "상품 수정 성공"));
     }
 
