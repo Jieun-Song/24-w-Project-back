@@ -147,20 +147,27 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(result, result));
     }
 
-    // 비밀번호 재설정
+    // 비밀번호 재설정 - 이메일, 현재 비밀번호, 새 비밀번호, 비밀번호 확인
     @PostMapping("/reset-password")
     public ResponseEntity<ApiResponse<?>> resetPassword(@RequestBody Map<String, String> request) {
         String userEmail = request.get("userEmail");
+        String currentPassword = request.get("currentPassword");
         String newPassword = request.get("newPassword");
         String confirmPassword = request.get("confirmPassword");
 
-        if (userEmail == null || newPassword == null || confirmPassword == null) {
+        if (userEmail == null || currentPassword == null || newPassword == null || confirmPassword == null) {
             return ResponseEntity.badRequest().body(ApiResponse.createError("필수 입력값이 누락되었습니다."));
         }
 
-        String response = userService.resetPassword(userEmail, newPassword, confirmPassword);
-        return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(null, response));
+        if (!newPassword.equals(confirmPassword)) {
+            return ResponseEntity.badRequest().body(ApiResponse.createError("새 비밀번호와 비밀번호 확인이 일치하지 않습니다."));
+        }
+
+        String result = userService.resetPassword(userEmail, currentPassword, newPassword);
+        return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(result, result));
     }
+
+    
 
     // 이름 재설정
     @PostMapping("/reset-name")
@@ -211,20 +218,27 @@ public class UserController {
         }
     }
 
-    // 회원 탈퇴
-    @DeleteMapping("/withdrawal")
-    public ResponseEntity<ApiResponse<?>> withdrawal(@RequestHeader("Authorization") String token) {
-        // 토큰 앞에 "Bearer " 붙어 있다면 제거
+    @PostMapping("/withdrawal")
+    public ResponseEntity<ApiResponse<?>> withdrawal(
+            @RequestHeader("Authorization") String token,
+            @RequestBody Map<String, String> request) {
+
         if (token.startsWith("Bearer ")) {
             token = token.substring(7);
         }
 
+        String password = request.get("password");
+        if (password == null || password.isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.createError("비밀번호가 필요합니다."));
+        }
+
         try {
-            String response = userService.deleteUser(token);
-            return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(response, "회원 탈퇴 성공"));
+            String result = userService.deleteUser(token, password);
+            return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(result, "회원 탈퇴 성공"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ApiResponse.createError("토큰 인증 실패 또는 회원 탈퇴 실패: " + e.getMessage()));
+                    .body(ApiResponse.createError("회원 탈퇴 실패: " + e.getMessage()));
         }
     }
 } 

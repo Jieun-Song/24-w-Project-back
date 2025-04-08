@@ -13,4 +13,7 @@ public interface PermissionRepository extends JpaRepository<Permission, Long> {
 
     // 사용자와 관련된 모든 약관 조회
     List<Permission> findByUser(User user);
+
+    void deleteAllByUser(User user);
+
 }

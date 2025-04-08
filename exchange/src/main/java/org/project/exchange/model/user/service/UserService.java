@@ -5,8 +5,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.project.exchange.config.TokenProvider;
 import org.project.exchange.global.api.ApiResponse;
+import org.project.exchange.model.auth.repository.AuthRepository;
+import org.project.exchange.model.auth.repository.PermissionRepository;
+import org.project.exchange.model.auth.repository.SystemLogRepository;
 import org.project.exchange.model.auth.service.EmailService;
 import org.project.exchange.model.auth.service.PermissionService;
+import org.project.exchange.model.list.Lists;
+import org.project.exchange.model.list.repository.ListsRepository;
+import org.project.exchange.model.product.repository.ProductRepository;
 import org.project.exchange.model.user.Dto.ResetNameResponse;
 import org.project.exchange.model.user.Dto.SignInRequest;
 import org.project.exchange.model.user.Dto.SignInResponse;
@@ -17,6 +23,7 @@ import org.project.exchange.model.user.Dto.UserInfoResponse;
 import org.project.exchange.model.user.KakaoUser;
 import org.project.exchange.model.user.RefreshToken;
 import org.project.exchange.model.user.User;
+import org.project.exchange.model.user.repository.KakaoUserRepository;
 import org.project.exchange.model.user.repository.RefreshTokenRepository;
 import org.project.exchange.model.user.repository.UserRepository;
 import org.springframework.http.HttpStatus;
@@ -25,6 +32,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 
 import lombok.extern.slf4j.Slf4j; 
@@ -34,6 +42,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.regex.Pattern;
@@ -45,6 +54,12 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final KakaoUserRepository kakaoUserRepository;
+    private final PermissionRepository permissionRepository;
+    private final SystemLogRepository systemLogRepository;
+    private final ListsRepository listsRepository;
+    private final ProductRepository productRepository;
+    private final AuthRepository authRepository;
     private final PasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
     private final PermissionService permissionService; // 약관 동의 관리
@@ -254,21 +269,21 @@ public class UserService {
         return "임시 비밀번호가 이메일로 전송되었습니다.";
     }
 
-    //  비밀번호 재설정
+    // 비밀번호 재설정 - 이메일로유저 정보 확인 후, 현재 비밀번호가 일치하는지 확인, 새 비밀번호 설정
     @Transactional
-    public String resetPassword(String userEmail, String newPassword, String confirmPassword) {
+    public String resetPassword(String userEmail, String currentPassword, String newPassword) {
         User user = userRepository.findByUserEmail(userEmail);
-
         if (user == null) {
             return "일치하는 사용자 정보가 없습니다.";
         }
 
-        if (!newPassword.equals(confirmPassword)) {
-            return "새 비밀번호와 확인 비밀번호가 일치하지 않습니다.";
+        if (!passwordEncoder.matches(currentPassword, user.getUserPassword())) {
+            return "현재 비밀번호가 일치하지 않습니다.";
         }
 
+        // 비밀번호 형식 확인
         if (!isValidPassword(newPassword)) {
-            return "비밀번호는 8~16자이며, 영문, 숫자, 특수문자를 포함해야 합니다.";
+            return "비밀번호 형식이 올바르지 않습니다. 비밀번호는 8자 이상 16자 이하, 문자, 숫자, 특수문자를 포함해야 합니다.";
         }
 
         user = user.toBuilder()
@@ -279,6 +294,7 @@ public class UserService {
 
         return "비밀번호가 성공적으로 변경되었습니다.";
     }
+
 
     //  랜덤 비밀번호 생성 (비밀번호 규칙 적용)
     private String generateValidRandomPassword() {
@@ -315,6 +331,8 @@ public class UserService {
                 .userName(newName)
                 .build();
     }
+
+   
 
     // 개인정보 수정
     @Transactional
@@ -402,9 +420,8 @@ public class UserService {
                 .build();
     }
 
-    //회원 탈퇴
     @Transactional
-    public String deleteUser(String token) {
+    public String deleteUser(String token, String password) {
         String subject = tokenProvider.validateTokenAndGetSubject(token);
         String userEmail = subject.split(":")[1];
 
@@ -413,14 +430,36 @@ public class UserService {
             throw new RuntimeException("사용자를 찾을 수 없습니다.");
         }
 
-        // 1. RefreshToken 먼저 삭제
-        refreshTokenRepository.findById(user.getUserId())
-                .ifPresent(refreshTokenRepository::delete);
+        if (!passwordEncoder.matches(password, user.getUserPassword())) {
+            throw new RuntimeException("비밀번호가 일치하지 않습니다.");
+        }
 
-        // 2. 연관된 엔티티 삭제는 User 엔티티의 cascade = CascadeType.ALL, orphanRemoval = true 설정으로
-        // 자동 처리됨
+        // 1. RefreshToken 삭제
+        refreshTokenRepository.deleteById(user.getUserId());
+
+        // 2. KakaoUser 삭제 (Optional)
+        kakaoUserRepository.findByUser(user).ifPresent(kakaoUserRepository::delete);
+
+        // 3. Auth 삭제
+        authRepository.deleteAllByUser(user);
+
+        // 4. Permission 삭제
+        permissionRepository.deleteAllByUser(user);
+
+        // 5. SystemLog 삭제
+        systemLogRepository.deleteAllByUser(user);
+
+        // 6. Lists 및 Product 삭제 (Cascade로 자동 처리되지만 명시적으로 하면 안전)
+        List<Lists> userLists = listsRepository.findAllByUser(user);
+        for (Lists list : userLists) {
+            productRepository.deleteAllByLists(list); // 연결된 상품 먼저 제거
+            listsRepository.delete(list);
+        }
+
+        // 7. 최종적으로 User 삭제
         userRepository.delete(user);
 
         return "회원 탈퇴 성공";
     }
+
 }
