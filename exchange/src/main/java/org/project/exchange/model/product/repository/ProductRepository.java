@@ -2,6 +2,8 @@ package org.project.exchange.model.product.repository;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+
+import org.project.exchange.model.list.Lists;
 import org.project.exchange.model.product.Product;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -72,4 +74,11 @@ public class ProductRepository{
                 .getSingleResult();
         return count != null ? count : 0L;
     }
+
+    public void deleteAllByLists(Lists lists) {
+    em.createQuery("DELETE FROM Product p WHERE p.lists = :lists")
+        .setParameter("lists", lists)
+        .executeUpdate();
+}
+
 }

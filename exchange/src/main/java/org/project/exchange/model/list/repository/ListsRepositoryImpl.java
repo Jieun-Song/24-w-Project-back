@@ -28,6 +28,14 @@ public class ListsRepositoryImpl implements ListsRepositoryCustom {
                 .getResultList();
     }
 
+    @Override
+    public void deleteAllByUser(User user) {
+        List<Lists> lists = findAllByUserId(user);
+        for (Lists list : lists) {
+            em.remove(em.contains(list) ? list : em.merge(list));
+        }
+    }
+
 }
 
 

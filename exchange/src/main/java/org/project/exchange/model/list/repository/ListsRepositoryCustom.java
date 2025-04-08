@@ -9,4 +9,7 @@ public interface ListsRepositoryCustom {
     long countAllList();
 
     List<Lists> findAllByUserId(User user);
+
+    void deleteAllByUser(User user);
+
 }
