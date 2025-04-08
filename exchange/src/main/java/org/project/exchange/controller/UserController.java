@@ -218,7 +218,7 @@ public class UserController {
         }
     }
 
-    @DeleteMapping("/withdrawal")
+    @PostMapping("/withdrawal")
     public ResponseEntity<ApiResponse<?>> withdrawal(
             @RequestHeader("Authorization") String token,
             @RequestBody Map<String, String> request) {
