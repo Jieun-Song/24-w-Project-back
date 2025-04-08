@@ -80,11 +80,10 @@ public class ListsController {
         return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(total, "총금액 조회 성공"));
     }
 
-    //환율 변경
     @PatchMapping("/update")
-    public ResponseEntity<ApiResponse<UpdateResponse>> updateCurrency(@RequestBody UpdateRequest requestDto) {
+    public ResponseEntity<ApiResponse<UpdateResponse>> updateList(@RequestBody UpdateRequest requestDto) {
         UpdateResponse updatedLists = listsService.updateList(requestDto);
-        return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(updatedLists, "환율 변경 성공"));
+        return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(updatedLists, "리스트 변경 성공"));
     }
 
     private Long getCurrentUserId() {
