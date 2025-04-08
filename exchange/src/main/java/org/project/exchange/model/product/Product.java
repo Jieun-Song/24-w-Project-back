@@ -43,4 +43,9 @@ public class Product {
         this.originPrice = originPrice;
         this.lists = lists;
     }
+
+    public void updateNameAndPrice(String name, Double originPrice) {
+        this.name = name;
+        this.originPrice = originPrice;
+    }
 }
