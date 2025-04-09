@@ -39,7 +39,7 @@ public class ListsController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.createSuccessWithMessage(newLists, "리스트 추가 성공"));
     }
 
-    //모든 리스트 불러오기(로그인 안해도 걍 가능)
+    //모든 리스트 불러오기(로그인 안해도 ㄱㅊ)
 //    @GetMapping()
 //    public ResponseEntity<ApiResponse<List<ListsResponseDto>>> getAllLists(
 //            @RequestParam(required = false) Long userId) {
