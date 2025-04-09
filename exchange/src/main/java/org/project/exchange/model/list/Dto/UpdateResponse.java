@@ -11,6 +11,7 @@ public class UpdateResponse {
     private Long listId;
     private String name;
     private Long userId;
+    private String location;
     private LocalDateTime createdAt;
     private Currency currencyFrom;
     private Currency currencyTo;
@@ -19,6 +20,7 @@ public class UpdateResponse {
         this.listId = lists.getListId();
         this.name = lists.getName();
         this.userId = lists.getUser().getUserId();
+        this.location = lists.getLocation();
         this.createdAt = lists.getCreatedAt();
         this.currencyFrom = lists.getCurrencyFrom();
         this.currencyTo = lists.getCurrencyTo();
