@@ -7,6 +7,7 @@ import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.project.exchange.global.api.ApiResponse;
+import org.project.exchange.model.user.KakaoUser;
 import org.project.exchange.model.user.User;
 import org.project.exchange.model.user.Dto.FindPasswordRequest;
 import org.project.exchange.model.user.Dto.KakaoLoginRequest;
@@ -32,6 +33,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -218,6 +220,7 @@ public class UserController {
         }
     }
 
+    // 일반회원 탈퇴
     @PostMapping("/withdrawal")
     public ResponseEntity<ApiResponse<?>> withdrawal(
             @RequestHeader("Authorization") String token,
@@ -241,4 +244,23 @@ public class UserController {
                     .body(ApiResponse.createError("회원 탈퇴 실패: " + e.getMessage()));
         }
     }
+
+    // 카카오 회원 탈퇴
+    @PostMapping("/kakao/withdrawal")
+    public ResponseEntity<ApiResponse<?>> kakaoWithdrawal(@RequestHeader("Authorization") String token) {
+        try {
+            if (token.startsWith("Bearer ")) {
+                token = token.substring(7);
+            }
+
+            userService.deleteKakaoUser(token); 
+
+            return ResponseEntity.ok(ApiResponse.createSuccessWithMessage("카카오 회원 탈퇴 성공", "카카오 회원 탈퇴 성공"));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.createError("카카오 회원 탈퇴 실패: " + e.getMessage()));
+        }
+    }
+
 } 

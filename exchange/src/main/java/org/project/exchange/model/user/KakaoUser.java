@@ -26,10 +26,15 @@ public class KakaoUser {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @Column(name = "access_token")
+    private String accessToken;
+
     @Builder
-    public KakaoUser(String kakaoId, String nickname, User user) {
+    public KakaoUser(String kakaoId, String nickname, User user, String accessToken) {
         this.kakaoId = kakaoId;
         this.nickname = nickname;
         this.user = user;
+        this.accessToken = accessToken;
+
     }
 }
