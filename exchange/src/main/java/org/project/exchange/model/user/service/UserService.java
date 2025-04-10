@@ -462,4 +462,49 @@ public class UserService {
         return "회원 탈퇴 성공";
     }
 
+    @Transactional
+    public void deleteKakaoUser(String token) {
+        try {
+            String subject = tokenProvider.decodeJwtPayloadSubject(token); // "userId:userEmail"
+            String userEmail = subject.split(":")[1]; // 이메일 추출
+
+            User user = userRepository.findByUserEmail(userEmail);
+            if (user == null) {
+                throw new RuntimeException("사용자를 찾을 수 없습니다.");
+            }
+
+            Optional<KakaoUser> optionalKakaoUser = kakaoUserRepository.findByUser(user);
+            if (optionalKakaoUser.isEmpty()) {
+                log.warn("⚠️ 카카오 유저 정보가 없습니다.");
+                return;
+            }
+
+            KakaoUser kakaoUser = optionalKakaoUser.get();
+
+            if (kakaoUser.getAccessToken() != null && !kakaoUser.getAccessToken().isEmpty()) {
+                kakaoService.unlink(kakaoUser.getAccessToken());
+            }
+
+            // 삭제 순서
+            kakaoUserRepository.delete(kakaoUser);
+            authRepository.deleteAllByUser(user);
+            permissionRepository.deleteAllByUser(user);
+            systemLogRepository.deleteAllByUser(user);
+
+            List<Lists> userLists = listsRepository.findAllByUser(user);
+            for (Lists list : userLists) {
+                productRepository.deleteAllByLists(list);
+                listsRepository.delete(list);
+            }
+
+            refreshTokenRepository.deleteById(user.getUserId());
+            userRepository.delete(user);
+
+            log.info("✅ 카카오 회원 탈퇴 성공");
+
+        } catch (JsonProcessingException e) {
+            log.error("JWT subject 디코딩 실패", e);
+            throw new RuntimeException("토큰 파싱 실패");
+        }
+    }
 }
