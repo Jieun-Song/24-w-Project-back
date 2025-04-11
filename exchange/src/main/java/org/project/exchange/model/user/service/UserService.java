@@ -417,6 +417,7 @@ public class UserService {
                 .userEmail(user.getUserEmail())
                 .userName(user.getUserName())
                 .userDateOfBirth(formattedDate)
+                .isKakaoUser(kakaoUserRepository.findByUser(user).isPresent())    
                 .build();
     }
 
