@@ -12,4 +12,5 @@ public class UserInfoResponse {
     private String userName;
     private String userEmail;
     private String userDateOfBirth;
+    private boolean isKakaoUser;
 }
