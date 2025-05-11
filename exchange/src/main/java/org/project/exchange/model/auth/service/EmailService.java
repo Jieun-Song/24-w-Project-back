@@ -125,4 +125,40 @@ public class EmailService {
         String storedEmail = redisUtil.getData(authNumber);
         return storedEmail != null && storedEmail.equals(email);
     }
+
+    /**
+     *  임시 비밀번호 이메일 전송
+     * 
+     * @param email        수신자 이메일
+     * @param tempPassword 생성된 임시 비밀번호
+     */
+    @Transactional
+    public void sendTemporaryPassword(String email, String tempPassword) {
+        validateEmail(email);
+
+        String title = "임시 비밀번호 안내";
+        String content = generateTemporaryPasswordEmailContent(tempPassword);
+
+        sendMail(FROM_EMAIL, email, title, content);
+    }
+
+    /**
+     *  임시 비밀번호 이메일 본문 생성
+     * 
+     * @param tempPassword 임시 비밀번호
+     * @return 이메일 본문 내용
+     */
+    private String generateTemporaryPasswordEmailContent(String tempPassword) {
+        return "<div style='margin:100px;'>"
+                + "<h1>안녕하세요. MoneyLense입니다.</h1>"
+                + "<p>요청하신 임시 비밀번호가 생성되었습니다. 아래의 비밀번호를 사용하여 로그인 후 반드시 변경해 주세요.</p>"
+                + "<br>"
+                + "<div align='center' style='border:1px solid black; font-family:verdana;'>"
+                + "<h3 style='color:blue;'>임시 비밀번호</h3>"
+                + "<div style='font-size:130%;'><strong>" + tempPassword + "</strong></div>"
+                + "</div>"
+                + "<br><p>감사합니다!</p>"
+                + "</div>";
+    }
+
 }

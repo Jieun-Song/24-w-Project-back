@@ -23,12 +23,17 @@ repositories {
     mavenCentral()
 }
 
+tasks.withType(JavaCompile) {
+    options.compilerArgs += "-parameters"
+}
+
 dependencies {
     // Spring Boot
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     // implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-batch'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
@@ -64,6 +69,8 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.12.1'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
+    // geocoding
+    implementation 'com.googlecode.json-simple:json-simple:1.1.1'
 
 }
 

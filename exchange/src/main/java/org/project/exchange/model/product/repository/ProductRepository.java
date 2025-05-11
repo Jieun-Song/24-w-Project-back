@@ -2,6 +2,8 @@ package org.project.exchange.model.product.repository;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+
+import org.project.exchange.model.list.Lists;
 import org.project.exchange.model.product.Product;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -28,14 +30,21 @@ public class ProductRepository{
     }
     //list별 product
     public List<Product> findByListId(Long listId){
-        return em.createQuery("SELECT p FROM Product p WHERE p.lists.id = :listId", Product.class)
+        return em.createQuery("SELECT p FROM Product p WHERE p.lists.id = :listId AND p.deletedYn = false", Product.class)
                 .setParameter("listId", listId)
                 .getResultList();
     }
 
     //특정 product 삭제
     public void delete(Product product){
-        em.remove(product);
+        product.setDeletedYn(true);
+    }
+
+    //선택 product 삭제
+    public void deleteByIds(List<Long> ids) {
+        em.createQuery("DELETE FROM Product p WHERE p.id IN :ids")
+                .setParameter("ids", ids)
+                .executeUpdate();
     }
 
     public void deleteByListId(Long listId) {
@@ -45,8 +54,31 @@ public class ProductRepository{
     }
 
     public double sumOriginPrice(Long listId) {
-        return (double) em.createQuery("SELECT SUM(p.originPrice) FROM Product p WHERE p.lists.id = :listId")
+        Double sum = (Double) em.createQuery(
+                        "SELECT SUM(p.originPrice) FROM Product p WHERE p.lists.id = :listId AND p.deletedYn = false")
                 .setParameter("listId", listId)
                 .getSingleResult();
+        return sum != null ? sum : 0.0;
     }
+
+    public long countAllProduct() {
+        Long count = (Long) em.createQuery("SELECT COUNT(i) FROM Product i")
+                .getSingleResult();
+        return count != null ? count : 0L;
+    }
+
+    public long countAllProductByListId(Long listId) {
+        Long count = (Long) em.createQuery(
+                        "SELECT COUNT(i) FROM Product i WHERE i.lists.id = :listId AND i.deletedYn = false")
+                .setParameter("listId", listId)
+                .getSingleResult();
+        return count != null ? count : 0L;
+    }
+
+    public void deleteAllByLists(Lists lists) {
+    em.createQuery("DELETE FROM Product p WHERE p.lists = :lists")
+        .setParameter("lists", lists)
+        .executeUpdate();
+}
+
 }

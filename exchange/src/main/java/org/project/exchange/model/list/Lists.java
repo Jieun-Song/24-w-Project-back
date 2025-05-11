@@ -14,6 +14,7 @@ import org.project.exchange.model.user.User;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -47,21 +48,41 @@ public class Lists {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "currency_id") // 통화 ID
+    @JoinColumn(name = "currency_id_from") // 통화 ID
     @JsonIgnore
-    private Currency currency;
+    private Currency currencyFrom;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "currency_id_to") // 통화 ID
+    @JsonIgnore
+    private Currency currencyTo;
 
     @Builder
-    public Lists(String name, LocalDateTime createdAt, String location, User user, Currency currency) {
+    public Lists(String name, LocalDateTime createdAt, String location, User user, Currency currencyFrom, Currency currencyTo) {
         this.name = name;
         this.createdAt = createdAt;
         this.location = location;
         this.products = new ArrayList<>();
         this.user = user;
-        this.currency = currency;
+        this.currencyFrom = currencyFrom;
+        this.currencyTo = currencyTo;
     }
 
     public void setDeletedYn(Boolean deletedYn) {
         this.deletedYn = deletedYn;
+    }
+
+    public void setName(String newName){
+        this.name = newName;
+    }
+    public void setLocation(String newLocation){
+        this.location = newLocation;
+    }
+
+    public void setCurrencyFrom(Optional<Currency> byId) {
+        this.currencyFrom = byId.get();
+    }
+    public void setCurrencyTo(Optional<Currency> byId) {
+        this.currencyTo = byId.get();
     }
 }

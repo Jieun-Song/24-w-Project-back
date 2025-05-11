@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
 
-@RestControllerAdvice(basePackages = "com.example.jejutravel")
+@RestControllerAdvice(basePackages = "org.project.exchange")
 public class ResponseExceptionHandler {
     /**
      * IllegalArgumentException, NoSuchElementException 예외 처리

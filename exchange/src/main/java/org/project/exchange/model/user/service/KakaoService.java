@@ -139,6 +139,7 @@ public class KakaoService {
                     .kakaoId(kakaoId)
                     .nickname(nickname)
                     .user(newUser)
+                    .accessToken(accessToken)
                     .build();
 
             log.info("새로운 카카오 유저 저장: " + kakaoUser.getNickname());
@@ -209,4 +210,81 @@ public class KakaoService {
 
         return userInfo;
     }
+
+    /**
+     * ✅ 카카오 로그아웃 메서드
+     * 
+     * @param accessToken 카카오에서 발급받은 AccessToken
+     */
+    public void logout(String accessToken) {
+        String requestURL = "https://kapi.kakao.com/v1/user/logout";
+
+        try {
+            URL url = new URL(requestURL);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Authorization", "Bearer " + accessToken);
+            conn.setRequestProperty("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
+
+            int responseCode = conn.getResponseCode();
+            log.info("카카오 로그아웃 요청 응답 코드: " + responseCode);
+
+            if (responseCode == 200) {
+                log.info("카카오 로그아웃 성공");
+            } else {
+                log.error("카카오 로그아웃 실패: " + responseCode);
+                throw new RuntimeException("카카오 로그아웃에 실패했습니다.");
+            }
+
+        } catch (Exception e) {
+            log.error("카카오 로그아웃 중 오류 발생", e);
+        }
+    }
+    /**
+     * ✅ 카카오 계정 연결 해제 메서드
+     * 
+     * @param accessToken 카카오에서 발급받은 AccessToken
+     */
+    public void unlink(String accessToken) {
+        String requestURL = "https://kapi.kakao.com/v1/user/unlink";
+
+        try {
+            URL url = new URL(requestURL);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Authorization", "Bearer " + accessToken);
+            conn.setRequestProperty("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
+
+            int responseCode = conn.getResponseCode();
+            log.info("카카오 계정 연결 해제 요청 응답 코드: " + responseCode);
+
+            if (responseCode == 200) {
+                log.info("카카오 계정 연결 해제 성공");
+            } else {
+                log.error("카카오 계정 연결 해제 실패: " + responseCode);
+                throw new RuntimeException("카카오 계정 연결 해제에 실패했습니다.");
+            }
+
+        } catch (Exception e) {
+            log.error("카카오 계정 연결 해제 중 오류 발생", e);
+        }
+    }
+    /**
+     * ✅ 카카오 계정 연결 해제 후 사용자 정보 삭제 메서드
+     * 
+     * @param kakaoId 카카오 ID
+     */
+    public void deleteKakaoUser(String kakaoId) {
+        Optional<KakaoUser> optionalKakaoUser = kakaoUserRepository.findByKakaoId(kakaoId);
+        if (optionalKakaoUser.isPresent()) {
+            KakaoUser kakaoUser = optionalKakaoUser.get();
+            User user = kakaoUser.getUser();
+            userRepository.delete(user);
+            kakaoUserRepository.delete(kakaoUser);
+            log.info("카카오 계정 연결 해제 및 사용자 정보 삭제 성공");
+        } else {
+            log.warn("카카오 계정이 존재하지 않습니다.");
+        }
+    }
+
 }
