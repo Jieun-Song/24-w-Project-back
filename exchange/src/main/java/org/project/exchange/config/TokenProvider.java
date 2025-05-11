@@ -122,4 +122,10 @@ public class TokenProvider {
                 new String(Base64.getDecoder().decode(oldAccessToken.split("\\.")[1]), StandardCharsets.UTF_8),
                 Map.class).get("sub").toString();
     }
+
+    public String extractUserEmail(String token) throws JsonProcessingException {
+        String subject = decodeJwtPayloadSubject(token); // e.g. "7:3919161577@kakao.com"
+        return subject.split(":")[1]; // "3919161577@kakao.com"
+    }
+
 }
