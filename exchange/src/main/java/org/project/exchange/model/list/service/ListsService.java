@@ -100,4 +100,14 @@ public class ListsService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 리스트가 존재하지 않습니다."));
         return new ListsResponseDto(lists);
     }
+
+    // 유저의 해당 날짜에 해당하는 리스트를 가져오는 메서드
+        public List<ListsResponseDto> getListsByDate(Long userId, String startDate, String endDate) {
+                User user = userRepository.findById(userId)
+                        .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다."));
+                return listsRepository.findByCreatedAtBetween(user, startDate, endDate)
+                        .stream()
+                        .map(ListsResponseDto::new)
+                        .collect(Collectors.toList());
+        }
 }
