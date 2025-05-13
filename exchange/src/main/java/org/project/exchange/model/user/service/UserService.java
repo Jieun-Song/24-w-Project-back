@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Random;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 @Slf4j
@@ -519,5 +520,40 @@ public class UserService {
             log.error("JWT subject 디코딩 실패", e);
             throw new RuntimeException("토큰 파싱 실패");
         }
+    }
+
+    // 구글 로그인
+    @Transactional
+    public SignInResponse googleSignIn(String email, String name) {
+        User user = userRepository.findByUserEmail(email);
+
+        if (user == null) {
+            user = User.builder()
+                    .userEmail(email)
+                    .userName(name)
+                    .userGender(true) // 알 수 없으면 기본값
+                    .userDateOfBirth(Date.valueOf("2000-01-01")) // 알 수 없으면 기본값
+                    .userPassword(passwordEncoder.encode(UUID.randomUUID().toString()))
+                    .userCreatedAt(new Date(System.currentTimeMillis()))
+                    .userUpdatedAt(new Date(System.currentTimeMillis()))
+                    .build();
+            userRepository.save(user);
+        }
+
+        String jwtAccessToken = tokenProvider.createToken(user);
+        String jwtRefreshToken = tokenProvider.createRefreshToken();
+
+        refreshTokenRepository.save(
+            new RefreshToken(user.getUserId(), user, jwtRefreshToken)
+        );
+
+        return SignInResponse.builder()
+                .userId(user.getUserId())
+                .userName(user.getUserName())
+                .userEmail(user.getUserEmail())
+                .accessToken(jwtAccessToken)
+                .refreshToken(jwtRefreshToken)
+                .msg("구글 로그인 성공")
+                .build();
     }
 }
