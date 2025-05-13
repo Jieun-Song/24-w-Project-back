@@ -6,6 +6,7 @@ import lombok.Getter;
 import java.sql.Date;
 import java.util.List;
 
+
 @Getter
 public class SignUpRequest {
 
@@ -23,5 +24,7 @@ public class SignUpRequest {
     private String otp;
     
     private List<Boolean> agreedTerms;
+
+    private Long defaultCurrencyId;
 
 }

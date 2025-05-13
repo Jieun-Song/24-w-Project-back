@@ -10,6 +10,8 @@ import org.project.exchange.model.auth.repository.PermissionRepository;
 import org.project.exchange.model.auth.repository.SystemLogRepository;
 import org.project.exchange.model.auth.service.EmailService;
 import org.project.exchange.model.auth.service.PermissionService;
+import org.project.exchange.model.currency.Currency;
+import org.project.exchange.model.currency.repository.CurrencyRepository;
 import org.project.exchange.model.list.Lists;
 import org.project.exchange.model.list.repository.ListsRepository;
 import org.project.exchange.model.product.repository.ProductRepository;
@@ -42,7 +44,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.regex.Pattern;
@@ -66,6 +67,8 @@ public class UserService {
     private final EmailService emailService; // 이메일 인증 관리
     private final KakaoService kakaoService; // 카카오 로그인 관리
     private final Random random = new Random();
+    private final CurrencyRepository currencyRepository;
+
 
     // 📌 비밀번호 패턴 (영문, 숫자, 특수문자 포함, 8~16자)
     private static final String PASSWORD_PATTERN = "^(?=.*[a-zA-Z])(?=.*\\d)(?=.*[!@#$%^&*]).{8,16}$";
@@ -101,6 +104,15 @@ public class UserService {
                     .build();
         }
 
+        // 기본 통화 조회 및 검증
+        Optional<Currency> currencyOpt = currencyRepository.findById(request.getDefaultCurrencyId());
+        if (currencyOpt.isEmpty()) {
+            return SignUpResponse.builder()
+                    .msg("기본 통화 ID가 유효하지 않습니다.")
+                    .build();
+        }
+        Currency defaultCurrency = currencyOpt.get();
+
         // 사용자 생성
         User user = User.builder()
                 .userName(request.getUserName())
@@ -110,6 +122,7 @@ public class UserService {
                 .userPassword(passwordEncoder.encode(request.getUserPassword()))
                 .userCreatedAt(new Date(System.currentTimeMillis()))
                 .userUpdatedAt(new Date(System.currentTimeMillis()))
+                .defaultCurrency(defaultCurrency) 
                 .build();
 
         userRepository.save(user);
@@ -129,6 +142,7 @@ public class UserService {
                 .userEmail(user.getUserEmail())
                 .userGender(user.isUserGender())
                 .userDateOfBirth(user.getUserDateOfBirth().toString())
+                .defaultCurrencyId(user.getDefaultCurrency().getCurrencyId()) // 기본 통화 정보 추가
                 .build();
     }
 
@@ -331,8 +345,6 @@ public class UserService {
                 .userName(newName)
                 .build();
     }
-
-   
 
     // 개인정보 수정
     @Transactional

@@ -1,5 +1,7 @@
 package org.project.exchange.model.user.Dto;
 
+import org.project.exchange.model.currency.Currency;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
@@ -23,4 +25,7 @@ public class SignUpResponse {
 
     @JsonProperty("userDateOfBirth")
     private String userDateOfBirth; // "yyyy-MM-dd" 형식
+
+    @JsonProperty("defaultCurrency")
+    private Long defaultCurrencyId;    
 }

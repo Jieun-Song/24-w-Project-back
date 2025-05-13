@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import org.project.exchange.model.product.Product;
+import org.project.exchange.model.user.User;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -32,6 +33,10 @@ public class Currency {
 
     @Column(name = "created_at", nullable = false)
     private LocalDate createdAt;
+
+    @OneToMany(mappedBy = "defaultCurrency")
+    @JsonIgnore
+    private List<User> usersWithThisAsDefault;
 
     @Builder
     public Currency(String curUnit, Double dealBasR, String curNm, LocalDate createdAt) {

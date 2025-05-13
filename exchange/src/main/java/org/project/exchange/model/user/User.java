@@ -3,9 +3,12 @@ package org.project.exchange.model.user;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 import java.sql.Date;
@@ -22,6 +25,7 @@ import jakarta.persistence.OneToMany;
 import org.project.exchange.model.auth.Auth;
 import org.project.exchange.model.auth.Permission;
 import org.project.exchange.model.auth.SystemLog;
+import org.project.exchange.model.currency.Currency;
 import org.project.exchange.model.list.Lists;
 
 
@@ -71,17 +75,23 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Lists> lists; // 사용자가 생성한 리스트들
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "default_currency_id")
+    private Currency defaultCurrency; // 사용자가 설정한 기본 통화
+
     @Builder(toBuilder = true)
-    public User(Long userId, String userName, Date userDateOfBirth, 
+public User(Long userId, String userName, Date userDateOfBirth,
             boolean userGender, String userEmail, String userPassword,
-            Date userCreatedAt, Date userUpdatedAt) {
-        this.userId = userId;
-        this.userName = userName;
-        this.userDateOfBirth = userDateOfBirth;
-        this.userGender = userGender;
-        this.userEmail = userEmail;
-        this.userPassword = userPassword;
-        this.userCreatedAt = userCreatedAt != null ? userCreatedAt : Date.valueOf(LocalDate.now());
-        this.userUpdatedAt = userUpdatedAt;
-    }
+            Date userCreatedAt, Date userUpdatedAt, Currency defaultCurrency) {
+    this.userId = userId;
+    this.userName = userName;
+    this.userDateOfBirth = userDateOfBirth;
+    this.userGender = userGender;
+    this.userEmail = userEmail;
+    this.userPassword = userPassword;
+    this.userCreatedAt = userCreatedAt != null ? userCreatedAt : Date.valueOf(LocalDate.now());
+    this.userUpdatedAt = userUpdatedAt;
+    this.defaultCurrency = defaultCurrency;
+}
+
 }
