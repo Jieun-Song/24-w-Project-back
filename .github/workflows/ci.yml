@@ -1,0 +1,27 @@
+name: Java CI with Gradle
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    - name: 🐳 JDK 17 세팅
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: 🐳 gradlew 실행 권한 설정
+      run: chmod +x gradlew
+ 
+    - name: 🐳 테스트 진행
+      run: ./gradlew --info test
