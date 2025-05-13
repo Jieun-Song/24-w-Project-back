@@ -105,11 +105,11 @@ public class ListsController {
 
     // 현재 로그인한 사용자의 해당 날짜 별 리스트 조회
     @GetMapping("/date")
-    public ResponseEntity<ApiResponse<List<ListsResponseDto>>> getListsByDate(
+    public ResponseEntity<ApiResponse<List<ListWithProductsDto>>> getListsByDate(
             @RequestParam("startDate") String startDate,
             @RequestParam("endDate") String endDate) {
-        Long userId = getCurrentUserId(); // 현재 로그인한 사용자 ID 가져오기
-        List<ListsResponseDto> lists = listsService.getListsByDate(userId, startDate, endDate);
+        Long userId = getCurrentUserId();
+        List<ListWithProductsDto> lists = listsService.getListsByDate(userId, startDate, endDate);
         return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(lists, "리스트 조회 성공"));
     }
 

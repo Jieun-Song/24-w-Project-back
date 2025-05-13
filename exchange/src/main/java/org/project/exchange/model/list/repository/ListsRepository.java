@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -18,7 +19,9 @@ public interface ListsRepository extends JpaRepository<Lists, Long>, ListsReposi
 
     List<Lists> findAllByUser(User user);
 
-    @Query("SELECT l FROM Lists l WHERE l.user = :user AND l.createdAt BETWEEN :startDate AND :endDate")
-    List<Lists> findByCreatedAtBetween(@Param("user") User user, @Param("startDate") String startDate, @Param("endDate") String endDate);
+    @Query("SELECT l FROM Lists l LEFT JOIN FETCH l.products WHERE l.user = :user AND l.createdAt BETWEEN :startDate AND :endDate")
+    List<Lists> findByUserAndCreatedAtBetween(@Param("user") User user,
+                                            @Param("startDate") LocalDateTime start,
+                                            @Param("endDate") LocalDateTime end);
 
 }
