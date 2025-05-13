@@ -19,6 +19,7 @@ import org.project.exchange.model.user.Dto.SignUpResponse;
 import org.project.exchange.model.user.Dto.UpdateUserInfoRequest;
 import org.project.exchange.model.user.Dto.UserInfoResponse;
 import org.project.exchange.model.user.repository.UserRepository;
+import org.project.exchange.model.user.service.GoogleOAuthService;
 import org.project.exchange.model.user.service.UserService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -42,7 +43,7 @@ import java.util.Optional;
 public class UserController {
 
     private final UserService userService;
-    private final UserRepository userRepository;
+    private final GoogleOAuthService googleOAuthService;
 
     // 회원가입
     @PostMapping("/signup")
@@ -261,6 +262,22 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.createError("카카오 회원 탈퇴 실패: " + e.getMessage()));
         }
+    }
+
+    // 구글 로그인
+    @PostMapping("/google/signin")
+    public ResponseEntity<ApiResponse<?>> googleLogin(@RequestBody Map<String, String> request) {
+        String accessToken = request.get("accessToken");
+        if (accessToken == null || accessToken.isEmpty()) {
+            return ResponseEntity.badRequest().body(ApiResponse.createError("Access token 누락"));
+        }
+
+        Map<String, Object> userInfo = googleOAuthService.getUserInfo(accessToken);
+        String email = (String) userInfo.get("email");
+        String name = (String) userInfo.get("name");
+
+        SignInResponse response = userService.googleSignIn(email, name);
+        return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(response, "구글 로그인 성공"));
     }
 
 } 
