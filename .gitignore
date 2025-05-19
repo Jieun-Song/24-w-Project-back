@@ -9,3 +9,4 @@ exchange/src/main/resources/application.properties
 build
 .DS_Store
 .idea
+exchange/src/main/resources/application-dev.properties

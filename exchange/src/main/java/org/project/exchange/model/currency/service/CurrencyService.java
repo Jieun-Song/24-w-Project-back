@@ -121,7 +121,7 @@ public class CurrencyService {
         String formattedNow = myDate.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
 
         String urlStr = String.format(
-                "https://www.koreaexim.go.kr/site/program/financial/exchangeJSON?data=AP01&authkey=%s&searchdate=%s",
+                "https://www.koreaexim.go.kr/site/program/financial/exchangeJSON?data=AP01&authkey=%s&searchdate=20250430",
                 currencyApiProperties.getKey(), formattedNow
         );
 

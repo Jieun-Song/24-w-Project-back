@@ -6,6 +6,7 @@ import org.project.exchange.global.api.ApiResponse;
 import org.project.exchange.model.list.Dto.*;
 import org.project.exchange.model.list.Lists;
 import org.project.exchange.model.list.service.ListsService;
+import org.project.exchange.model.user.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -14,6 +15,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -39,18 +41,6 @@ public class ListsController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.createSuccessWithMessage(newLists, "리스트 추가 성공"));
     }
 
-    //모든 리스트 불러오기(로그인 안해도 ㄱㅊ)
-//    @GetMapping()
-//    public ResponseEntity<ApiResponse<List<ListsResponseDto>>> getAllLists(
-//            @RequestParam(required = false) Long userId) {
-//        List<ListsResponseDto> lists;
-//        if (userId != null) {
-//            lists = listsService.showAllLists(userId);
-//        } else {
-//            throw new IllegalArgumentException("유저 ID가 필요합니다.");
-//        }
-//        return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(lists, "리스트 조회 성공"));
-//    }
     // 현재 로그인한 사용자의 모든 리스트 조회 (JWT 인증 필수)
     @GetMapping()
     public ResponseEntity<ApiResponse<List<ListsResponseDto>>> getAllLists() {
@@ -113,6 +103,15 @@ public class ListsController {
         throw new IllegalArgumentException("알 수 없는 인증 정보 타입: " + principal.getClass().getName());
     }
 
+    // 현재 로그인한 사용자의 해당 날짜 별 리스트 조회
+    @GetMapping("/date")
+    public ResponseEntity<ApiResponse<List<ListWithProductsDto>>> getListsByDate(
+            @RequestParam("startDate") String startDate,
+            @RequestParam("endDate") String endDate) {
+        Long userId = getCurrentUserId();
+        List<ListWithProductsDto> lists = listsService.getListsByDate(userId, startDate, endDate);
+        return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(lists, "리스트 조회 성공"));
+    }
 
 }
 

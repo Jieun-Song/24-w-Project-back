@@ -13,7 +13,9 @@ import org.project.exchange.model.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -100,4 +102,20 @@ public class ListsService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 리스트가 존재하지 않습니다."));
         return new ListsResponseDto(lists);
     }
+
+    // 유저의 해당 날짜에 해당하는 리스트를 가져오는 메서드
+    public List<ListWithProductsDto> getListsByDate(Long userId, String startDate, String endDate) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다."));
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDateTime start = LocalDate.parse(startDate, formatter).atStartOfDay();
+        LocalDateTime end = LocalDate.parse(endDate, formatter).atTime(23, 59, 59);
+
+        return listsRepository.findByUserAndCreatedAtBetween(user, start, end)
+                .stream()
+                .map(ListWithProductsDto::new)
+                .collect(Collectors.toList());
+        }
+
 }

@@ -10,6 +10,8 @@ import org.project.exchange.model.auth.repository.PermissionRepository;
 import org.project.exchange.model.auth.repository.SystemLogRepository;
 import org.project.exchange.model.auth.service.EmailService;
 import org.project.exchange.model.auth.service.PermissionService;
+import org.project.exchange.model.currency.Currency;
+import org.project.exchange.model.currency.repository.CurrencyRepository;
 import org.project.exchange.model.list.Lists;
 import org.project.exchange.model.list.repository.ListsRepository;
 import org.project.exchange.model.product.repository.ProductRepository;
@@ -42,9 +44,9 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 @Slf4j
@@ -66,6 +68,8 @@ public class UserService {
     private final EmailService emailService; // 이메일 인증 관리
     private final KakaoService kakaoService; // 카카오 로그인 관리
     private final Random random = new Random();
+    private final CurrencyRepository currencyRepository;
+
 
     // 📌 비밀번호 패턴 (영문, 숫자, 특수문자 포함, 8~16자)
     private static final String PASSWORD_PATTERN = "^(?=.*[a-zA-Z])(?=.*\\d)(?=.*[!@#$%^&*]).{8,16}$";
@@ -101,6 +105,15 @@ public class UserService {
                     .build();
         }
 
+        // 기본 통화 조회 및 검증
+        Optional<Currency> currencyOpt = currencyRepository.findById(request.getDefaultCurrencyId());
+        if (currencyOpt.isEmpty()) {
+            return SignUpResponse.builder()
+                    .msg("기본 통화 ID가 유효하지 않습니다.")
+                    .build();
+        }
+        Currency defaultCurrency = currencyOpt.get();
+
         // 사용자 생성
         User user = User.builder()
                 .userName(request.getUserName())
@@ -110,6 +123,7 @@ public class UserService {
                 .userPassword(passwordEncoder.encode(request.getUserPassword()))
                 .userCreatedAt(new Date(System.currentTimeMillis()))
                 .userUpdatedAt(new Date(System.currentTimeMillis()))
+                .defaultCurrency(defaultCurrency) 
                 .build();
 
         userRepository.save(user);
@@ -129,6 +143,7 @@ public class UserService {
                 .userEmail(user.getUserEmail())
                 .userGender(user.isUserGender())
                 .userDateOfBirth(user.getUserDateOfBirth().toString())
+                .defaultCurrencyId(user.getDefaultCurrency().getCurrencyId()) // 기본 통화 정보 추가
                 .build();
     }
 
@@ -332,8 +347,6 @@ public class UserService {
                 .build();
     }
 
-   
-
     // 개인정보 수정
     @Transactional
     public UserInfoResponse updateUserInfo(UpdateUserInfoRequest request) {
@@ -507,5 +520,40 @@ public class UserService {
             log.error("JWT subject 디코딩 실패", e);
             throw new RuntimeException("토큰 파싱 실패");
         }
+    }
+
+    // 구글 로그인
+    @Transactional
+    public SignInResponse googleSignIn(String email, String name) {
+        User user = userRepository.findByUserEmail(email);
+
+        if (user == null) {
+            user = User.builder()
+                    .userEmail(email)
+                    .userName(name)
+                    .userGender(true) // 알 수 없으면 기본값
+                    .userDateOfBirth(Date.valueOf("2000-01-01")) // 알 수 없으면 기본값
+                    .userPassword(passwordEncoder.encode(UUID.randomUUID().toString()))
+                    .userCreatedAt(new Date(System.currentTimeMillis()))
+                    .userUpdatedAt(new Date(System.currentTimeMillis()))
+                    .build();
+            userRepository.save(user);
+        }
+
+        String jwtAccessToken = tokenProvider.createToken(user);
+        String jwtRefreshToken = tokenProvider.createRefreshToken();
+
+        refreshTokenRepository.save(
+            new RefreshToken(user.getUserId(), user, jwtRefreshToken)
+        );
+
+        return SignInResponse.builder()
+                .userId(user.getUserId())
+                .userName(user.getUserName())
+                .userEmail(user.getUserEmail())
+                .accessToken(jwtAccessToken)
+                .refreshToken(jwtRefreshToken)
+                .msg("구글 로그인 성공")
+                .build();
     }
 }
