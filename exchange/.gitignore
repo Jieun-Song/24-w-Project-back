@@ -37,5 +37,6 @@ out/
 .vscode/
 
 #jwt.yml
+application-dev.properties
 .git/
 
