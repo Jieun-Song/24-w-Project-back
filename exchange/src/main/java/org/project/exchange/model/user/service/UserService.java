@@ -430,7 +430,9 @@ public class UserService {
                 .userEmail(user.getUserEmail())
                 .userName(user.getUserName())
                 .userDateOfBirth(formattedDate)
-                .isKakaoUser(kakaoUserRepository.findByUser(user).isPresent())    
+                .isKakaoUser(kakaoUserRepository.findByUser(user).isPresent())  
+                .isGoogleUser(user.getUserEmail().contains("@gmail.com")) // 구글 이메일인지 확인
+                .defaultCurrencyId(user.getDefaultCurrency().getCurrencyId()) // 기본 통화 정보 추가  
                 .build();
     }
 
@@ -453,6 +455,9 @@ public class UserService {
 
         // 2. KakaoUser 삭제 (Optional)
         kakaoUserRepository.findByUser(user).ifPresent(kakaoUserRepository::delete);
+
+        // 3. GoogleUser 삭제 (Optional)
+        
 
         // 3. Auth 삭제
         authRepository.deleteAllByUser(user);

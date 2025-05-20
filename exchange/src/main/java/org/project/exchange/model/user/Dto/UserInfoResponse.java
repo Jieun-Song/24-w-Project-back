@@ -13,4 +13,6 @@ public class UserInfoResponse {
     private String userEmail;
     private String userDateOfBirth;
     private boolean isKakaoUser;
+    private boolean isGoogleUser;
+    private Long defaultCurrencyId;
 }

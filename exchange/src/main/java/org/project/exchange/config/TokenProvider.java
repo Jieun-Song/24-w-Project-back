@@ -128,4 +128,14 @@ public class TokenProvider {
         return subject.split(":")[1]; // "3919161577@kakao.com"
     }
 
+    public Map<String, Object> decodeGoogleIdToken(String idToken) {
+        try {
+            return objectMapper.readValue(
+                    new String(Base64.getDecoder().decode(idToken.split("\\.")[1]), StandardCharsets.UTF_8),
+                    Map.class);
+        } catch (Exception e) {
+            throw new RuntimeException("ID Token 파싱 실패", e);
+        }
+    }    
+
 }
