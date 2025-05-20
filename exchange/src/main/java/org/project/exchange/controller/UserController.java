@@ -220,7 +220,7 @@ public class UserController {
     }
 
 
-    // 회원정보 수정하기 - 생년월일, 이름 (이메일은 변경 불가)
+    // 회원정보 수정하기 - 생년월일, 이름, 주통화
     @PostMapping("/update-user-info")
     public ResponseEntity<ApiResponse<?>> updateUserInfo(@Valid @RequestBody UpdateUserInfoRequest request) {
         try {
