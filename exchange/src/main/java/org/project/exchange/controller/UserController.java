@@ -267,17 +267,18 @@ public class UserController {
     // 구글 로그인
     @PostMapping("/google/signin")
     public ResponseEntity<ApiResponse<?>> googleLogin(@RequestBody Map<String, String> request) {
-        String accessToken = request.get("accessToken");
-        if (accessToken == null || accessToken.isEmpty()) {
-            return ResponseEntity.badRequest().body(ApiResponse.createError("Access token 누락"));
+        String idToken = request.get("idToken");
+        if (idToken == null || idToken.isEmpty()) {
+            return ResponseEntity.badRequest().body(ApiResponse.createError("ID token 누락"));
         }
 
-        Map<String, Object> userInfo = googleOAuthService.getUserInfo(accessToken);
+        // 변경된 부분
+        Map<String, Object> userInfo = googleOAuthService.decodeIdToken(idToken);
         String email = (String) userInfo.get("email");
         String name = (String) userInfo.get("name");
 
         SignInResponse response = userService.googleSignIn(email, name);
         return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(response, "구글 로그인 성공"));
     }
-
+    
 } 
