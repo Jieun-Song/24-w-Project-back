@@ -28,6 +28,13 @@ public class ProductRepository{
     public List<Product> findAll(){
         return em.createQuery("SELECT p FROM Product p", Product.class).getResultList();
     }
+    public List<Object[]> findAllByUser(Long userId) {
+        return em.createQuery(
+                        "SELECT p, l.currencyFrom.id FROM Product p JOIN p.lists l WHERE l.user.userId = :userId",
+                        Object[].class)
+                .setParameter("userId", userId)
+                .getResultList();
+    }
     //list별 product
     public List<Product> findByListId(Long listId){
         return em.createQuery("SELECT p FROM Product p WHERE p.lists.id = :listId AND p.deletedYn = false", Product.class)

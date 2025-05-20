@@ -34,9 +34,10 @@ public class ProductController {
         return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(product, "상품 조회 성공"));}
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<Product>>> getAllProducts() {
-        List<Product> products = productService.findAll();
-        return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(products, "상품 조회 성공"));
+    public ResponseEntity<ApiResponse<List<ProductWithCurrencyDto>>> getAllProducts() {
+        Long userId = ListsController.getCurrentUserId();
+        List<ProductWithCurrencyDto> productsWithCurrency = productService.findAll(userId);
+        return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(productsWithCurrency, "상품 조회 성공"));
     }
 
     @PatchMapping("/update")

@@ -76,7 +76,7 @@ public class ListsController {
         return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(updatedLists, "리스트 변경 성공"));
     }
 
-    private Long getCurrentUserId() {
+    public static Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new IllegalArgumentException("유효한 인증 정보가 없습니다.");

@@ -435,6 +435,25 @@ public class UserService {
                 .defaultCurrencyId(user.getDefaultCurrency().getCurrencyId()) // 기본 통화 정보 추가  
                 .build();
     }
+    // 사용자 환율 조회 (토큰)
+    @Transactional(readOnly = true)
+    public Long getUserCurrency(String accessToken) {
+        String subject = tokenProvider.validateTokenAndGetSubject(accessToken);
+        log.info("🔑 Token subject: {}", subject);
+
+        // 토큰 subject에서 이메일만 추출 (형식: userId:userEmail)
+        String[] parts = subject.split(":");
+        if (parts.length != 2) {
+            throw new RuntimeException("토큰 subject 형식이 올바르지 않습니다.");
+        }
+
+        String userEmail = parts[1]; // 이메일만 사용
+        User user = userRepository.findByUserEmail(userEmail);
+        if (user == null) {
+            throw new RuntimeException("사용자를 찾을 수 없습니다.");
+        }
+        return user.getDefaultCurrency().getCurrencyId();
+    }
 
     @Transactional
     public String deleteUser(String token, String password) {
