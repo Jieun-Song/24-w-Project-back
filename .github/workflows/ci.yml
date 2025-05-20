@@ -22,6 +22,8 @@ jobs:
 
     - name: 🐳 gradlew 실행 권한 설정
       run: chmod +x gradlew
+      working-directory: ./exchange
  
     - name: 🐳 테스트 진행
       run: ./gradlew --info test
+      working-directory: ./exchange 
