@@ -113,5 +113,15 @@ public class ListsController {
         return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(lists, "리스트 조회 성공"));
     }
 
+    // 특정 날짜에 해당하는 리스트 조회 (예: 2025-05-20 하루만 조회)
+    @GetMapping("/date/one")
+    public ResponseEntity<ApiResponse<List<ListWithProductsDto>>> getListsBySingleDate(
+            @RequestParam("date") String date) {
+        Long userId = getCurrentUserId();
+        // 하루만 조회하므로 startDate == endDate
+        List<ListWithProductsDto> lists = listsService.getListsByDate(userId, date, date);
+        return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(lists, "특정 날짜 리스트 조회 성공"));
+    }
+
 }
 

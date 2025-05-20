@@ -14,12 +14,21 @@ public class ListWithProductsDto {
     private String location;
     private String createdAt;
     private List<ProductResponseDto> products;
-
+    private Long currencyFromId; 
+    private Long currencyToId; 
+    
     public ListWithProductsDto(Lists lists) {
         this.listId = lists.getListId();
         this.name = lists.getName();
         this.location = lists.getLocation();
         this.createdAt = lists.getCreatedAt().toString();
+
+        this.currencyFromId = lists.getCurrencyFrom() != null
+                ? lists.getCurrencyFrom().getCurrencyId()
+                : null;
+        this.currencyToId = lists.getCurrencyTo() != null
+                ? lists.getCurrencyTo().getCurrencyId()
+                : null;
 
         this.products = lists.getProducts().stream()
                 .map(ProductResponseDto::new)

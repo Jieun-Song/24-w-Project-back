@@ -288,7 +288,6 @@ public class UserController {
             return ResponseEntity.badRequest().body(ApiResponse.createError("ID token 누락"));
         }
 
-        // 변경된 부분
         Map<String, Object> userInfo = googleOAuthService.decodeIdToken(idToken);
         String email = (String) userInfo.get("email");
         String name = (String) userInfo.get("name");
