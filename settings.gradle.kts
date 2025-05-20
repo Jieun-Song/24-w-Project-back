@@ -5,5 +5,5 @@
  * For more detailed information on multi-project builds, please refer to https://docs.gradle.org/8.7/userguide/multi_project_builds.html in the Gradle documentation.
  */
 
-rootProject.name = "24-w-Project-back"
-include("plugin")
+//rootProject.name = "24-w-Project-back"
+//include("plugin")
