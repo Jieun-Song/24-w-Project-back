@@ -1,6 +1,5 @@
 package org.project.exchange.model.user.Dto;
 
-import java.util.List;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

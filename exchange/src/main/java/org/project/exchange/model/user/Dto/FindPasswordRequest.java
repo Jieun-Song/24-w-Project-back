@@ -1,6 +1,5 @@
 package org.project.exchange.model.user.Dto;
 
-import java.time.LocalDate;
 
 import lombok.Builder;
 import lombok.Getter;
