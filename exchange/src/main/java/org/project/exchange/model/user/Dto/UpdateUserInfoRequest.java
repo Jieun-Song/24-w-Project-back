@@ -10,4 +10,5 @@ public class UpdateUserInfoRequest {
     private String userName;
     private String userDateOfBirth; // yyyy-MM-dd 포맷
     private String userPassword;
+    private Long defaultCurrencyId;
 }

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 import lombok.RequiredArgsConstructor;
 import org.project.exchange.config.TokenProvider;
-import org.project.exchange.global.api.ApiResponse;
 import org.project.exchange.model.auth.repository.AuthRepository;
 import org.project.exchange.model.auth.repository.PermissionRepository;
 import org.project.exchange.model.auth.repository.SystemLogRepository;
@@ -28,14 +27,10 @@ import org.project.exchange.model.user.User;
 import org.project.exchange.model.user.repository.KakaoUserRepository;
 import org.project.exchange.model.user.repository.RefreshTokenRepository;
 import org.project.exchange.model.user.repository.UserRepository;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
+
 
 import lombok.extern.slf4j.Slf4j; 
 
@@ -231,6 +226,16 @@ public class UserService {
         }
 
         User user = kakaoUser.getUser();
+        if (user.getDefaultCurrency() == null) {
+            Currency defaultCurrency = currencyRepository.findAll()
+                    .stream()
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("기본 통화 정보가 없습니다."));
+            user = user.toBuilder()
+                    .defaultCurrency(defaultCurrency)
+                    .build();
+            userRepository.save(user);
+        }
         if (user == null) {
             throw new RuntimeException("해당 카카오 사용자에 대한 유저 정보가 없습니다.");
         }
@@ -391,6 +396,14 @@ public class UserService {
             log.info("ℹ️ 사용자 정보 변경 없음. 현재 정보 반환.");
         }
 
+        // 기본 통화 변경
+        if (request.getDefaultCurrencyId() != null) {
+            Currency currency = currencyRepository.findById(request.getDefaultCurrencyId())
+                    .orElseThrow(() -> new RuntimeException("유효하지 않은 통화 ID입니다."));
+            user = user.toBuilder().defaultCurrency(currency).build();
+            userRepository.save(user);
+        }
+
         // 항상 최신 상태 반환
         user = userRepository.findById(user.getUserId()).orElseThrow(() -> new RuntimeException("저장된 사용자 없음"));
 
@@ -399,6 +412,9 @@ public class UserService {
                 .userEmail(user.getUserEmail())
                 .userName(user.getUserName())
                 .userDateOfBirth(user.getUserDateOfBirth().toLocalDate().toString())
+                .isKakaoUser(kakaoUserRepository.findByUser(user).isPresent())
+                .isGoogleUser(user.getUserEmail().contains("@gmail.com"))
+                .defaultCurrencyId(user.getDefaultCurrency().getCurrencyId()) 
                 .build();
 
     }
@@ -552,6 +568,11 @@ public class UserService {
         User user = userRepository.findByUserEmail(email);
 
         if (user == null) {
+            Currency defaultCurrency = currencyRepository.findAll()
+                    .stream()
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("기본 통화 정보가 없습니다."));
+
             user = User.builder()
                     .userEmail(email)
                     .userName(name)
@@ -560,6 +581,7 @@ public class UserService {
                     .userPassword(passwordEncoder.encode(UUID.randomUUID().toString()))
                     .userCreatedAt(new Date(System.currentTimeMillis()))
                     .userUpdatedAt(new Date(System.currentTimeMillis()))
+                    .defaultCurrency(defaultCurrency)
                     .build();
             userRepository.save(user);
         }
