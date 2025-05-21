@@ -226,6 +226,16 @@ public class UserService {
         }
 
         User user = kakaoUser.getUser();
+        if (user.getDefaultCurrency() == null) {
+            Currency defaultCurrency = currencyRepository.findAll()
+                    .stream()
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("기본 통화 정보가 없습니다."));
+            user = user.toBuilder()
+                    .defaultCurrency(defaultCurrency)
+                    .build();
+            userRepository.save(user);
+        }
         if (user == null) {
             throw new RuntimeException("해당 카카오 사용자에 대한 유저 정보가 없습니다.");
         }
@@ -558,6 +568,11 @@ public class UserService {
         User user = userRepository.findByUserEmail(email);
 
         if (user == null) {
+            Currency defaultCurrency = currencyRepository.findAll()
+                    .stream()
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("기본 통화 정보가 없습니다."));
+
             user = User.builder()
                     .userEmail(email)
                     .userName(name)
@@ -566,6 +581,7 @@ public class UserService {
                     .userPassword(passwordEncoder.encode(UUID.randomUUID().toString()))
                     .userCreatedAt(new Date(System.currentTimeMillis()))
                     .userUpdatedAt(new Date(System.currentTimeMillis()))
+                    .defaultCurrency(defaultCurrency)
                     .build();
             userRepository.save(user);
         }
