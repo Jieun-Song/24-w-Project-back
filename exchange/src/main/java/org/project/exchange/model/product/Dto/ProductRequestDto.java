@@ -2,8 +2,7 @@ package org.project.exchange.model.product.Dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.project.exchange.model.list.Lists;
-import org.project.exchange.model.product.Product;
+
 
 @Getter
 @NoArgsConstructor

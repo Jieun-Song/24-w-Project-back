@@ -40,4 +40,4 @@ out/
 application-dev.properties
 .git/
 
-jwt.yml
+!**/src/main/resources/jwt.yml

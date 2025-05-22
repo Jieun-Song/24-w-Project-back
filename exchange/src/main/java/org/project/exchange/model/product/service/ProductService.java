@@ -90,6 +90,15 @@ public class ProductService {
 //        productRepository.deleteByListId(listId);
 //    }
 
+    public List<ProductWithCurrencyDto> findAll(Long userId) {
+        List<Object[]> result =  productRepository.findAllByUser(userId);
+
+        List<ProductWithCurrencyDto> dtoList = result.stream()
+                .map(r -> new ProductWithCurrencyDto((Product) r[0], (Long) r[1]))
+                .toList();
+        return dtoList;
+    }
+
     public List<Product> findAll() {
         return productRepository.findAll();
     }

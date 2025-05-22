@@ -203,8 +203,24 @@ public class UserController {
         }
     }
 
+    // 아이디로 사용자 환율조회
+    @GetMapping("/user-currency")
+    public ResponseEntity<ApiResponse<Long>> getUserCurrency(@RequestHeader("Authorization") String token) {
+        // 토큰 앞에 "Bearer " 붙어 있다면 제거
+        if (token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+        try {
+            Long userCurrency = userService.getUserCurrency(token);
+            return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(userCurrency, "사용자 정보 조회 성공"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body((ApiResponse<Long>) ApiResponse.createError("토큰 인증 실패 또는 사용자 조회 실패: " + e.getMessage()));
+        }
+    }
 
-    // 회원정보 수정하기 - 생년월일, 이름 (이메일은 변경 불가)
+
+    // 회원정보 수정하기 - 생년월일, 이름, 주통화
     @PostMapping("/update-user-info")
     public ResponseEntity<ApiResponse<?>> updateUserInfo(@Valid @RequestBody UpdateUserInfoRequest request) {
         try {
@@ -272,7 +288,6 @@ public class UserController {
             return ResponseEntity.badRequest().body(ApiResponse.createError("ID token 누락"));
         }
 
-        // 변경된 부분
         Map<String, Object> userInfo = googleOAuthService.decodeIdToken(idToken);
         String email = (String) userInfo.get("email");
         String name = (String) userInfo.get("name");
