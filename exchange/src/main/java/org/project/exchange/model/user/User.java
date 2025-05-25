@@ -15,10 +15,12 @@ import java.sql.Date;
 import java.time.LocalDate;
 
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.OneToMany;
@@ -28,11 +30,12 @@ import org.project.exchange.model.auth.SystemLog;
 import org.project.exchange.model.currency.Currency;
 import org.project.exchange.model.list.Lists;
 
-
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
 @Table(name = "user")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder(toBuilder = true)
 public class User {
 
     @Id
@@ -61,37 +64,27 @@ public class User {
     @Column(name = "user_updated_at", nullable = false)
     private Date userUpdatedAt; // 수정일시
 
-    // Relationships
+    @Builder.Default
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Auth> auths; // 인증 정보
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Permission> permissions; // 권한 정보
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<SystemLog> systemLogs; // 시스템 로그
-
     @JsonManagedReference
+    private List<Auth> auths = new ArrayList<>();
+
+    @Builder.Default
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Lists> lists; // 사용자가 생성한 리스트들
+    private List<Permission> permissions = new ArrayList<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SystemLog> systemLogs = new ArrayList<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Lists> lists = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "default_currency_id")
     private Currency defaultCurrency; // 사용자가 설정한 기본 통화
 
-    @Builder(toBuilder = true)
-public User(Long userId, String userName, Date userDateOfBirth,
-            boolean userGender, String userEmail, String userPassword,
-            Date userCreatedAt, Date userUpdatedAt, Currency defaultCurrency) {
-    this.userId = userId;
-    this.userName = userName;
-    this.userDateOfBirth = userDateOfBirth;
-    this.userGender = userGender;
-    this.userEmail = userEmail;
-    this.userPassword = userPassword;
-    this.userCreatedAt = userCreatedAt != null ? userCreatedAt : Date.valueOf(LocalDate.now());
-    this.userUpdatedAt = userUpdatedAt;
-    this.defaultCurrency = defaultCurrency;
-}
+    
 
 }

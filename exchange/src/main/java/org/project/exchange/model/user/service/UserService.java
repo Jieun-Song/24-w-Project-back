@@ -353,70 +353,122 @@ public class UserService {
     }
 
     // 개인정보 수정
+    // @Transactional
+    // public UserInfoResponse updateUserInfo(UpdateUserInfoRequest request) {
+    //     Optional<User> optionalUser = Optional.ofNullable(userRepository.findByUserEmail(request.getUserEmail()));
+
+    //     if (optionalUser.isEmpty()) {
+    //         throw new RuntimeException("사용자를 찾을 수 없습니다.");
+    //     }
+
+    //     User user = optionalUser.get();
+    //     boolean updated = false;
+
+    //     // 이름 변경
+    //     if (request.getUserName() != null && !request.getUserName().isEmpty()) {
+    //         user = user.toBuilder().userName(request.getUserName()).build();
+    //         updated = true;
+    //     }
+
+    //     // 생년월일 변경
+    //     if (request.getUserDateOfBirth() != null && !request.getUserDateOfBirth().isEmpty()) {
+    //         LocalDate birthDate = LocalDate.parse(request.getUserDateOfBirth(),
+    //                 DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+    //         user = user.toBuilder().userDateOfBirth(Date.valueOf(birthDate)).build();
+    //         updated = true;
+    //     }
+
+    //     // 비밀번호 변경
+    //     if (request.getUserPassword() != null && !request.getUserPassword().isEmpty()) {
+    //         if (!isValidPassword(request.getUserPassword())) {
+    //             throw new IllegalArgumentException("비밀번호는 8~16자이며, 영문, 숫자, 특수문자를 포함해야 합니다.");
+    //         }
+    //         user = user.toBuilder().userPassword(passwordEncoder.encode(request.getUserPassword())).build();
+    //         updated = true;
+    //     }
+
+    //     if (updated) {
+    //         userRepository.save(user);
+    //     }
+
+    //     if (!updated) {
+    //         // 수정된 항목이 없으면, 그대로 현재 상태로 DTO를 반환
+    //         log.info("ℹ️ 사용자 정보 변경 없음. 현재 정보 반환.");
+    //     }
+
+    //     // 기본 통화 변경
+    //     if (request.getDefaultCurrencyId() != null) {
+    //         Currency currency = currencyRepository.findById(request.getDefaultCurrencyId())
+    //                 .orElseThrow(() -> new RuntimeException("유효하지 않은 통화 ID입니다."));
+    //         user = user.toBuilder().defaultCurrency(currency).build();
+    //         userRepository.save(user);
+    //     }
+
+    //     // 항상 최신 상태 반환
+    //     user = userRepository.findById(user.getUserId()).orElseThrow(() -> new RuntimeException("저장된 사용자 없음"));
+
+    //     return UserInfoResponse.builder()
+    //             .userId(user.getUserId())
+    //             .userEmail(user.getUserEmail())
+    //             .userName(user.getUserName())
+    //             .userDateOfBirth(user.getUserDateOfBirth().toLocalDate().toString())
+    //             .isKakaoUser(kakaoUserRepository.findByUser(user).isPresent())
+    //             .isGoogleUser(user.getUserEmail().contains("@gmail.com"))
+    //             .defaultCurrencyId(user.getDefaultCurrency().getCurrencyId()) 
+    //             .build();
+
+    // }
     @Transactional
-    public UserInfoResponse updateUserInfo(UpdateUserInfoRequest request) {
-        Optional<User> optionalUser = Optional.ofNullable(userRepository.findByUserEmail(request.getUserEmail()));
-
-        if (optionalUser.isEmpty()) {
+    public UserInfoResponse updateUserInfo(UpdateUserInfoRequest req) {
+        User before = userRepository.findByUserEmail(req.getUserEmail());
+        if (before == null)
             throw new RuntimeException("사용자를 찾을 수 없습니다.");
+
+        // toBuilder() 로 기존 컬렉션도 함께 복사됨
+        User.UserBuilder builder = before.toBuilder();
+
+        boolean changed = false;
+        if (req.getUserName() != null) {
+            builder.userName(req.getUserName());
+            changed = true;
+        }
+        if (req.getUserDateOfBirth() != null) {
+            Date dob = Date.valueOf(LocalDate.parse(req.getUserDateOfBirth()));
+            builder.userDateOfBirth(dob);
+            changed = true;
+        }
+        if (req.getUserPassword() != null) {
+            builder.userPassword(passwordEncoder.encode(req.getUserPassword()));
+            changed = true;
+        }
+        if (req.getDefaultCurrencyId() != null) {
+            Currency c = currencyRepository.findById(req.getDefaultCurrencyId())
+                    .orElseThrow(() -> new RuntimeException("유효하지 않은 통화 ID"));
+            builder.defaultCurrency(c);
+            changed = true;
+        }
+        if (!changed) {
+            log.info("ℹ️ 변경된 항목 없음");
+            // 컬렉션 복사만 해도 동일 엔티티이니 DB에 재저장할 필요 없습니다.
         }
 
-        User user = optionalUser.get();
-        boolean updated = false;
-
-        // 이름 변경
-        if (request.getUserName() != null && !request.getUserName().isEmpty()) {
-            user = user.toBuilder().userName(request.getUserName()).build();
-            updated = true;
-        }
-
-        // 생년월일 변경
-        if (request.getUserDateOfBirth() != null && !request.getUserDateOfBirth().isEmpty()) {
-            LocalDate birthDate = LocalDate.parse(request.getUserDateOfBirth(),
-                    DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-            user = user.toBuilder().userDateOfBirth(Date.valueOf(birthDate)).build();
-            updated = true;
-        }
-
-        // 비밀번호 변경
-        if (request.getUserPassword() != null && !request.getUserPassword().isEmpty()) {
-            if (!isValidPassword(request.getUserPassword())) {
-                throw new IllegalArgumentException("비밀번호는 8~16자이며, 영문, 숫자, 특수문자를 포함해야 합니다.");
-            }
-            user = user.toBuilder().userPassword(passwordEncoder.encode(request.getUserPassword())).build();
-            updated = true;
-        }
-
-        if (updated) {
-            userRepository.save(user);
-        }
-
-        if (!updated) {
-            // 수정된 항목이 없으면, 그대로 현재 상태로 DTO를 반환
-            log.info("ℹ️ 사용자 정보 변경 없음. 현재 정보 반환.");
-        }
-
-        // 기본 통화 변경
-        if (request.getDefaultCurrencyId() != null) {
-            Currency currency = currencyRepository.findById(request.getDefaultCurrencyId())
-                    .orElseThrow(() -> new RuntimeException("유효하지 않은 통화 ID입니다."));
-            user = user.toBuilder().defaultCurrency(currency).build();
-            userRepository.save(user);
-        }
-
-        // 항상 최신 상태 반환
-        user = userRepository.findById(user.getUserId()).orElseThrow(() -> new RuntimeException("저장된 사용자 없음"));
-
-        return UserInfoResponse.builder()
-                .userId(user.getUserId())
-                .userEmail(user.getUserEmail())
-                .userName(user.getUserName())
-                .userDateOfBirth(user.getUserDateOfBirth().toLocalDate().toString())
-                .isKakaoUser(kakaoUserRepository.findByUser(user).isPresent())
-                .isGoogleUser(user.getUserEmail().contains("@gmail.com"))
-                .defaultCurrencyId(user.getDefaultCurrency().getCurrencyId()) 
+        // 변경 시각만 갱신
+        User updated = builder
+                .userUpdatedAt(new Date(System.currentTimeMillis()))
                 .build();
 
+        // 빌더로 만들어진 새 엔티티를 save() 하면, JPA가 PK(userId)로 기존 레코드를 업데이트합니다.
+        userRepository.save(updated);
+
+        return UserInfoResponse.builder()
+                .userId(updated.getUserId())
+                .userEmail(updated.getUserEmail())
+                .userName(updated.getUserName())
+                .userDateOfBirth(updated.getUserDateOfBirth().toLocalDate().toString())
+                .isKakaoUser(kakaoUserRepository.findByUser(updated).isPresent())
+                .isGoogleUser(updated.getUserEmail().contains("@gmail.com"))
+                .defaultCurrencyId(updated.getDefaultCurrency().getCurrencyId())
+                .build();
     }
 
     // 사용자 정보 조회 (토큰)
