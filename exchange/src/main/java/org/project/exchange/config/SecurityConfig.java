@@ -29,7 +29,7 @@ public class SecurityConfig {
     private final String[] allowedUrls = {"/","/api/auth/find-id", "/api/auth/find-password", "/api/auth/reset-password",
                     "/api/auth/signin", "/api/auth/signup", "/api/auth/kakao/signin","/api/auth/google/**",
             "/api/v1/**", "/api/auth/signup/otp", "/api/auth/signup/otp/check", "/api/v1/**",
-            "/api/currency","/api/currency/import","/api/info/**", "/api/currency/**"
+            "/api/currency","/api/currency/import","/api/info/**", "/api/currency/**","/api/notice/**"
     };
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
