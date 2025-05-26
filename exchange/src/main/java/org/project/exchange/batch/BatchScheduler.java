@@ -27,7 +27,7 @@ public class BatchScheduler {
 	 * 평일 09:00-18:59 동안 50초 간격
 	 * JVM Time-Zone → Asia/Seoul
 	 */
-	@Scheduled(cron = "0/50 10 19 * * MON-FRI", zone = "Asia/Seoul")
+	@Scheduled(cron = "0/50 * 9-12 * * MON-FRI", zone = "Asia/Seoul")
 	 public void runFetchCurrencyJob() {
 	 	if (jobSucceeded) {
 	 		return;
