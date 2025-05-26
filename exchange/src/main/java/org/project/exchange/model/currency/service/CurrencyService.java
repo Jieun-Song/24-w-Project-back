@@ -18,6 +18,7 @@ import java.net.HttpURLConnection;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.net.ssl.*;
@@ -64,20 +65,28 @@ public class CurrencyService {
         try {
             URL url = new URL(urlStr);
             connection = (HttpURLConnection) url.openConnection();
-            connection.setInstanceFollowRedirects(false); // 🔁 리디렉션 자동 처리
+            connection.setInstanceFollowRedirects(false); // 리디렉션 자동 처리
             connection.setRequestMethod("GET");
             connection.setConnectTimeout(5000);
             connection.setReadTimeout(5000);
             connection.setRequestProperty("User-Agent", "Mozilla/5.0");
 
             int status = connection.getResponseCode();
-            log.info("HTTP status: {}", status);
+            log.info("🌐 HTTP status: {}", status);
 
-            // 응답 스트림 선택
-            InputStreamReader streamReader = (status > 299) ?
-                    new InputStreamReader(connection.getErrorStream()) :
-                    new InputStreamReader(connection.getInputStream());
+            InputStreamReader streamReader = null;
 
+            if (status != 200) {
+                log.error("HTTP 상태 코드 200 아님: {}", status);
+                throw new RuntimeException("HTTP 오류 상태: " + status);
+            }
+
+            if (connection.getInputStream() == null) {
+                log.warn("HTTP 200인데 inputStream이 null, 데이터 없음");
+                return Collections.emptyList();  // 조용히 성공 종료 (배치 실패 아님, 휴일인 경우)
+            }
+
+            streamReader = new InputStreamReader(connection.getInputStream());
             reader = new BufferedReader(streamReader);
             String line;
             while ((line = reader.readLine()) != null) {
