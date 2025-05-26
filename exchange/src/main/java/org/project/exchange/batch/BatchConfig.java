@@ -56,16 +56,12 @@ public class BatchConfig extends DefaultBatchConfiguration {
 	@Bean
 	public Tasklet fetchCurrencyTasklet() {
 		return (contribution, chunkContext) -> {
-			try {
-				List<Currency> saved = currencyService.fetchAndSaveCurrency();
-				if (saved.isEmpty()) {
-					throw new IllegalStateException("환율 데이터가 비어 있습니다.");
-				}
-				log.info("환율 데이터 수집 완료: {}건", saved.size());
-			} catch (Exception e) {
-				log.error("환율 데이터 수집 실패", e);
-				throw e;
+			List<Currency> saved = currencyService.fetchAndSaveCurrency();
+			if (saved.isEmpty()) {
+				log.warn("수집된 환율 데이터가 없으므로 배치 종료");
+				return RepeatStatus.FINISHED;
 			}
+			log.info("환율 데이터 수집 완료: {}건", saved.size());
 			return RepeatStatus.FINISHED;
 		};
 	}

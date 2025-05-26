@@ -1,6 +1,5 @@
 package org.project.exchange.model.currency.service;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -11,19 +10,12 @@ import org.project.exchange.model.currency.Dto.CurrencyFetchResponseDto;
 import org.project.exchange.model.currency.Dto.CurrencyInfoResponseDto;
 import org.project.exchange.model.currency.Dto.CurrencyResponseDto;
 import org.project.exchange.model.currency.repository.CurrencyRepository;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
-import reactor.util.retry.Retry;
 
 import java.io.BufferedReader;
 import java.net.HttpURLConnection;
-import java.time.DayOfWeek;
-import java.time.Duration;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,64 +41,7 @@ import java.net.URL;
 @Slf4j
 public class CurrencyService {
     private final CurrencyRepository currencyRepository;
-    //private final WebClient webClient;
     private final CurrencyApiProperties currencyApiProperties;
-
-//    public List<Currency> fetchAndSaveCurrency() {
-//        LocalDate myDate = LocalDate.now();
-//
-//        String formatedNow = myDate.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-//
-//        String url = String.format("https://www.koreaexim.go.kr/site/program/financial/exchangeJSON?data=AP01&authkey=%s&searchdate=%s",
-//                currencyApiProperties.getKey(),
-//                formatedNow);
-//        log.info(url);
-//        //공공데이터 API에서 JSON 데이터 가져오기
-//        List<CurrencyResponseDto> responseDtoList = webClient.get()
-//                .uri(url)
-//                .retrieve()
-//                .bodyToMono(new ParameterizedTypeReference<List<CurrencyResponseDto>>() {})
-//                .timeout(Duration.ofSeconds(15))
-//                .onErrorResume(e -> {
-//                    log.error("API 호출 실패: {}", e.getMessage());
-//                    return Mono.just(Collections.emptyList());
-//                })
-//                .block();
-//
-//        if (responseDtoList == null || responseDtoList.isEmpty()) {
-//            log.error("API 응답이 비어있습니다. URL: {}", url);
-//            throw new RuntimeException("API 응답이 비어있습니다.");
-//        }
-//
-//        for (CurrencyResponseDto dto : responseDtoList) {
-//            if (dto.getDealBasR() == null || dto.getCurUnit() == null || dto.getCurNm() == null) {
-//                log.warn("불완전한 데이터가 있습니다: dealBasR={}, curUnit={}, curNm={}", dto.getDealBasR(), dto.getCurUnit(), dto.getCurNm());
-//            }
-//        }
-//        List<Currency> savedList = responseDtoList.stream()
-//                .map(dto -> {
-//                    Currency currency = currencyRepository.findByCurUnit(dto.getCurUnit())
-//                            .map(existing -> {
-//                                // 이미 존재하면 금액만 업데이트
-//                                existing.updateDealBasR(getParsedDealBasR(dto.getDealBasR()));
-//                                existing.updateCreatedAt(myDate);
-//                                return existing;
-//                            })
-//                            .orElseGet(() -> {
-//                                // 없으면 새로 저장할 Currency 객체 생성
-//                                return Currency.builder()
-//                                        .curUnit(dto.getCurUnit())
-//                                        .dealBasR(getParsedDealBasR(dto.getDealBasR()))
-//                                        .curNm(dto.getCurNm())
-//                                        .createdAt(myDate)
-//                                        .build();
-//                            });
-//                    return currency;
-//                })
-//                .collect(Collectors.toList());
-//
-//        return currencyRepository.saveAll(savedList);
-//    }
 
     public List<Currency> fetchAndSaveCurrency() {
         trustAllCertificates(); // HTTPS 인증 우회 (기존 유지)
@@ -125,25 +60,33 @@ public class CurrencyService {
                 currencyApiProperties.getKey(), formattedNow
         );
 
-        log.info("📡 Fetching currency data from URL: {}", urlStr);
+        log.info("Fetching currency data from URL: {}", urlStr);
 
         try {
             URL url = new URL(urlStr);
             connection = (HttpURLConnection) url.openConnection();
-            connection.setInstanceFollowRedirects(false); // 🔁 리디렉션 자동 처리
+            connection.setInstanceFollowRedirects(false); // 리디렉션 자동 처리
             connection.setRequestMethod("GET");
             connection.setConnectTimeout(5000);
             connection.setReadTimeout(5000);
-            connection.setRequestProperty("User-Agent", "Mozilla/5.0"); // ✅ 중요
+            connection.setRequestProperty("User-Agent", "Mozilla/5.0");
 
             int status = connection.getResponseCode();
             log.info("🌐 HTTP status: {}", status);
 
-            // 응답 스트림 선택
-            InputStreamReader streamReader = (status > 299) ?
-                    new InputStreamReader(connection.getErrorStream()) :
-                    new InputStreamReader(connection.getInputStream());
+            InputStreamReader streamReader = null;
 
+            if (status != 200) {
+                log.error("HTTP 상태 코드 200 아님: {}", status);
+                throw new RuntimeException("HTTP 오류 상태: " + status);
+            }
+
+            if (connection.getInputStream() == null) {
+                log.warn("HTTP 200인데 inputStream이 null, 데이터 없음");
+                return Collections.emptyList();  // 조용히 성공 종료 (배치 실패 아님, 휴일인 경우)
+            }
+
+            streamReader = new InputStreamReader(connection.getInputStream());
             reader = new BufferedReader(streamReader);
             String line;
             while ((line = reader.readLine()) != null) {
@@ -162,7 +105,7 @@ public class CurrencyService {
 
                 // 유효성 체크
                 if (dto.getDealBasR() == null || dto.getCurUnit() == null || dto.getCurNm() == null) {
-                    log.warn("❗ 불완전한 데이터: {}", dto);
+                    log.warn("불완전한 데이터: {}", dto);
                     continue;
                 }
 
@@ -183,7 +126,7 @@ public class CurrencyService {
             }
 
         } catch (IOException | ParseException e) {
-            log.error("❌ 환율 데이터 수집 중 오류 발생", e);
+            log.error("환율 데이터 수집 중 오류 발생", e);
             throw new RuntimeException("환율 API 응답 파싱에 실패했습니다.", e);
         } finally {
             try {

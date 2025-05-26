@@ -27,5 +27,11 @@ public class Notice {
         this.title = title;
         this.content = content;
     }
+
+    public Notice update(String title, String content) {
+        this.title = title;
+        this.content = content;
+        return this;
+    }
 }
 
