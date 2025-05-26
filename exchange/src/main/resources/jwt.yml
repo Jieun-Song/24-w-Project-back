@@ -1,4 +1,4 @@
-secret-key: exchangeexchangeexchangeexchangeexchangeexchangeexchangeexchangeexchangeexchangeexchangeexchangeexchangeexchangeexchangeexchange
+secret-key: {JWT_SECRET_KEY}
 expiration-minutes: 30
 refresh-expiration-hours: 24
 issuer: exchange
