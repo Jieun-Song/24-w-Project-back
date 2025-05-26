@@ -23,7 +23,7 @@ public class BatchScheduler {
 
 	 //@Scheduled(cron = "0 0 9 * * MON-FRI") // 평일 오전 9시 실행
 	 //@Scheduled(cron = "*/50 * * * * MON-FRI") // 30초마다 실행
-	 @Scheduled(cron = "*/50 35 16 * * MON-FRI")
+	 @Scheduled(cron = "*/50 * 17 * * MON-FRI")
 	 public void runFetchCurrencyJob() {
 	 	if (jobSucceeded) {
 	 		return;
