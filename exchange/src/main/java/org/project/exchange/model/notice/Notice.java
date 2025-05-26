@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @NoArgsConstructor( access = AccessLevel.PROTECTED )
 @Getter
 @Entity
@@ -22,10 +24,14 @@ public class Notice {
     @Column(name = "content", nullable = false)
     private String content;
 
+    @Column(name = "date", nullable = false)
+    private LocalDate date;
+
     @Builder(toBuilder = true)
     public Notice(String title, String content) {
         this.title = title;
         this.content = content;
+        this.date = LocalDate.now();
     }
 
     public Notice update(String title, String content) {
