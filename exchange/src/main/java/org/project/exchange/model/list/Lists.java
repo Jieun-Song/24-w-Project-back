@@ -30,7 +30,6 @@ public class Lists {
     @Column(name = "name", nullable = false, length = 100) // 리스트 이름
     private String name;
 
-    @Column(name = "created_at", nullable = false)
     @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss", timezone="Asia/Seoul")
     private LocalDateTime createdAt;
 
