@@ -31,7 +31,7 @@ public class ListsController {
         Long userId = getCurrentUserId();
         requestDto.setUserId(userId);
         CreateListResponseDto newLists = listsService.createList(requestDto);
-        log.info("📥 컨트롤러 createList 완료: 새 리스트 ID={}", newLists.getListId());
+        log.info("📥 컨트롤러 createList 완료: 새 리스트 ID={}", newLists.getCreatedAt());
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.createSuccessWithMessage(newLists, "리스트 추가 성공"));
     }
 
