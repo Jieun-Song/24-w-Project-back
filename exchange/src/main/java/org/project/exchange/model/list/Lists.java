@@ -30,9 +30,7 @@ public class Lists {
     @Column(name = "name", nullable = false, length = 100) // 리스트 이름
     private String name;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING,
-            pattern = "yyyy-MM-dd'T'HH:mm:ssXXX",
-            timezone = "Asia/Seoul") // 생성 일자+시간
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
 
     @Column(name = "location", nullable = false) // 위치

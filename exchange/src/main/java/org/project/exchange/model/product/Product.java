@@ -29,9 +29,7 @@ public class Product {
     @Column(name = "deleted_yn", nullable = false) // 삭제 여부
     private Boolean deletedYn = false;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING,
-            pattern = "yyyy-MM-dd'T'HH:mm:ssXXX",
-            timezone = "Asia/Seoul")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
