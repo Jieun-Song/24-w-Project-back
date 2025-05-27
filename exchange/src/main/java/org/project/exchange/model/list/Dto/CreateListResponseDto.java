@@ -1,5 +1,6 @@
 package org.project.exchange.model.list.Dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +16,7 @@ public class CreateListResponseDto {
     private Long listId;
     private String name;
     private Long userId;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
     private Currency currencyFrom;
     private Currency currencyTo;
