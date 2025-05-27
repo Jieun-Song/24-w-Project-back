@@ -5,8 +5,6 @@ import jakarta.persistence.PersistenceContext;
 
 import org.project.exchange.model.list.Lists;
 import org.project.exchange.model.product.Product;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -26,11 +24,11 @@ public class ProductRepository{
     }
     //list 상관없이 모든 Product
     public List<Product> findAll(){
-        return em.createQuery("SELECT p FROM Product p", Product.class).getResultList();
+        return em.createQuery("SELECT p FROM Product p WHERE p.deletedYn = false", Product.class).getResultList();
     }
     public List<Object[]> findAllByUser(Long userId) {
         return em.createQuery(
-                        "SELECT p, l.currencyFrom.id FROM Product p JOIN p.lists l WHERE l.user.userId = :userId",
+                        "SELECT p, l.currencyFrom.id FROM Product p JOIN p.lists l WHERE l.user.userId = :userId AND p.deletedYn = false AND l.deletedYn = false",
                         Object[].class)
                 .setParameter("userId", userId)
                 .getResultList();

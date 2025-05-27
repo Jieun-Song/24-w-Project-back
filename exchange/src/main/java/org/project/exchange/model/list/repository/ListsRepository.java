@@ -19,7 +19,7 @@ public interface ListsRepository extends JpaRepository<Lists, Long>, ListsReposi
 
     List<Lists> findAllByUser(User user);
 
-    @Query("SELECT l FROM Lists l LEFT JOIN FETCH l.products WHERE l.user = :user AND l.createdAt BETWEEN :startDate AND :endDate")
+    @Query("SELECT l FROM Lists l LEFT JOIN FETCH l.products WHERE l.deletedYn = false AND l.user = :user AND l.createdAt BETWEEN :startDate AND :endDate")
     List<Lists> findByUserAndCreatedAtBetween(@Param("user") User user,
                                             @Param("startDate") LocalDateTime start,
                                             @Param("endDate") LocalDateTime end);
