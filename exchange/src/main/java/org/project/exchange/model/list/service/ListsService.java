@@ -47,7 +47,7 @@ public class ListsService {
         long listCount = listsRepository.countAllListByUser(requestDto.getUserId())+1;
         String listName = "리스트" + listCount;
 
-        Lists newLists = new Lists(listName,now, requestDto. getLocation(), user, currencyFrom, currencyTo);
+        Lists newLists = new Lists(listName, now, requestDto.getLocation(), user, currencyFrom, currencyTo);
 
         listsRepository.save(newLists);
 
