@@ -31,6 +31,7 @@ public class Lists {
     private String name;
 
     @Column(name = "created_at", nullable = false)
+    @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss", timezone="Asia/Seoul")
     private LocalDateTime createdAt;
 
     @Column(name = "location", nullable = false) // 위치

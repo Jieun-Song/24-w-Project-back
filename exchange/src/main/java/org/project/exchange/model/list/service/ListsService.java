@@ -37,7 +37,7 @@ public class ListsService {
                 .collect(Collectors.toList());
     }
     public CreateListResponseDto createList(CreateListRequestDto requestDto) {
-        log.debug("📥 createList() 호출됨");
+        log.info("📥 createList() 호출됨");
         User user = userRepository.findById(requestDto.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
         Currency currencyFrom = currencyRepository.findById(requestDto.getCurrencyIdFrom())
@@ -50,9 +50,9 @@ public class ListsService {
         String listName = "리스트" + listCount;
 
         Lists newLists = new Lists(listName, createdAt, requestDto.getLocation(), user, currencyFrom, currencyTo);
-        log.debug("💾서비스 리스트 객체 생성: name={}, createdAt={}, user={}, from={}, to={}", listName, createdAt, user.getUserId(), currencyFrom, currencyTo);
+        log.info("💾서비스 리스트 객체 생성: name={}, createdAt={}, user={}, from={}, to={}", listName, createdAt, user.getUserId(), currencyFrom, currencyTo);
         listsRepository.save(newLists);
-        log.debug("✅ 리스트 저장 완료, ID={}", newLists.getListId());
+        log.info("✅ 리스트 저장 완료, ID={}", newLists.getListId());
         return new CreateListResponseDto(newLists);
     }
 
