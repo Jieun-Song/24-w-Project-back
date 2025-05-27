@@ -16,7 +16,7 @@ public class CreateListResponseDto {
     private Long listId;
     private String name;
     private Long userId;
-    private LocalDateTime createdAt;
+    private String createdAt;
     private Currency currencyFrom;
     private Currency currencyTo;
     private String location;
@@ -26,7 +26,7 @@ public class CreateListResponseDto {
         this.name = lists.getName();
         this.userId = lists.getUser().getUserId();
         this.location = lists.getLocation();
-        this.createdAt = lists.getCreatedAt() ;
+        this.createdAt = lists.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
         this.currencyFrom = lists.getCurrencyFrom();
         this.currencyTo = lists.getCurrencyTo();
     }
