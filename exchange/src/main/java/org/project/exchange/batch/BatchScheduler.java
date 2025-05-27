@@ -21,13 +21,11 @@ public class BatchScheduler {
 
 	private boolean jobSucceeded = false;
 
-	 //@Scheduled(cron = "0 0 9 * * MON-FRI") // 평일 오전 9시 실행
-	 //@Scheduled(cron = "*/50 * * * * MON-FRI") // 30초마다 실행
 	/**
 	 * 평일 09:00-18:59 동안 50초 간격
 	 * JVM Time-Zone → Asia/Seoul
 	 */
-	@Scheduled(cron = "0/50 10 19 * * MON-FRI", zone = "Asia/Seoul")
+	@Scheduled(cron = "0/50 * 9-12 * * MON-FRI", zone = "Asia/Seoul")
 	 public void runFetchCurrencyJob() {
 	 	if (jobSucceeded) {
 	 		return;
