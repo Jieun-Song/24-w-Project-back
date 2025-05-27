@@ -28,6 +28,7 @@ public class ListsService {
     private final UserRepository userRepository;
     private final CurrencyRepository currencyRepository;
     private final ProductRepository productRepository;
+
     public List<ListsResponseDto> showAllLists(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다."));
         return listsRepository.findAllByUserId(user)
@@ -36,6 +37,7 @@ public class ListsService {
                 .collect(Collectors.toList());
     }
     public CreateListResponseDto createList(CreateListRequestDto requestDto) {
+        log.debug("📥 createList() 호출됨");
         User user = userRepository.findById(requestDto.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
         Currency currencyFrom = currencyRepository.findById(requestDto.getCurrencyIdFrom())
@@ -43,14 +45,14 @@ public class ListsService {
         Currency currencyTo = currencyRepository.findById(requestDto.getCurrencyIdTo())
                 .orElseThrow(() -> new IllegalArgumentException("환전이 되는 통화가 존재하지 않습니다."));
 
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime createdAt = LocalDateTime.now();
         long listCount = listsRepository.countAllListByUser(requestDto.getUserId())+1;
         String listName = "리스트" + listCount;
 
-        Lists newLists = new Lists(listName, now, requestDto.getLocation(), user, currencyFrom, currencyTo);
-
+        Lists newLists = new Lists(listName, createdAt, requestDto.getLocation(), user, currencyFrom, currencyTo);
+        log.debug("💾서비스 리스트 객체 생성: name={}, createdAt={}, user={}, from={}, to={}", listName, createdAt, user.getUserId(), currencyFrom, currencyTo);
         listsRepository.save(newLists);
-
+        log.debug("✅ 리스트 저장 완료, ID={}", newLists.getListId());
         return new CreateListResponseDto(newLists);
     }
 
@@ -62,9 +64,9 @@ public class ListsService {
         Currency currencyTo = currencyRepository.findById(requestDto.getCurrencyIdTo())
                 .orElseThrow(() -> new IllegalArgumentException("환전이 되는 통화가 존재하지 않습니다."));
 
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime createdAt = LocalDateTime.now();
 
-        Lists newLists = new Lists(requestDto.getName() ,now, requestDto.getLocation(),
+        Lists newLists = new Lists(requestDto.getName() ,createdAt, requestDto.getLocation(),
                 user, currencyFrom, currencyTo);
 
         listsRepository.save(newLists);
