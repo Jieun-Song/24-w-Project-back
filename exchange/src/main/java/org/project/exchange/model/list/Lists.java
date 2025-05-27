@@ -1,6 +1,7 @@
 package org.project.exchange.model.list;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -29,7 +30,9 @@ public class Lists {
     @Column(name = "name", nullable = false, length = 100) // 리스트 이름
     private String name;
 
-    @Column(name = "created_at", nullable = false) // 생성 일자+시간
+    @JsonFormat(shape = JsonFormat.Shape.STRING,
+            pattern = "yyyy-MM-dd'T'HH:mm:ssXXX",
+            timezone = "Asia/Seoul") // 생성 일자+시간
     private LocalDateTime createdAt;
 
     @Column(name = "location", nullable = false) // 위치
