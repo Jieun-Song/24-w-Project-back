@@ -1,6 +1,5 @@
 package org.project.exchange.model.currency;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
@@ -32,9 +31,8 @@ public class Currency {
     @Column(name = "cur_nm", nullable = false)
     private String curNm;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING,
-            pattern = "yyyy-MM-dd'T'HH:mm:ssXXX",
-            timezone = "Asia/Seoul")
+    @Column(name = "created_at", nullable = false)
+    @JsonIgnore
     private LocalDate createdAt;
 
     @OneToMany(mappedBy = "defaultCurrency")
