@@ -1,5 +1,6 @@
 package org.project.exchange.model.product;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
@@ -28,7 +29,9 @@ public class Product {
     @Column(name = "deleted_yn", nullable = false) // 삭제 여부
     private Boolean deletedYn = false;
 
-    @Column(name = "created_at", nullable = false) // 삭제 여부
+    @JsonFormat(shape = JsonFormat.Shape.STRING,
+            pattern = "yyyy-MM-dd'T'HH:mm:ssXXX",
+            timezone = "Asia/Seoul")
     private LocalDateTime createdAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
