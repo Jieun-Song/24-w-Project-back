@@ -10,6 +10,7 @@ public class ProductWithCurrencyDto {
     private final Long productId;
     private final Long listId;
     private final String name;
+    private final Integer quantity;
     private final Double originPrice;
     private final Long currencyId;
     private final String createdAt;
@@ -19,6 +20,7 @@ public class ProductWithCurrencyDto {
         this.productId = product.getProductId();
         this.listId = product.getLists().getListId();
         this.name = product.getName();
+        this.quantity = product.getQuantity();
         this.originPrice = product.getOriginPrice();
         this.deletedYn = product.getDeletedYn();
         this.createdAt = product.getCreatedAt().toString();

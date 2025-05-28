@@ -60,7 +60,7 @@ public class ProductRepository{
 
     public double sumOriginPrice(Long listId) {
         Double sum = (Double) em.createQuery(
-                        "SELECT SUM(p.originPrice) FROM Product p WHERE p.lists.id = :listId AND p.deletedYn = false")
+                        "SELECT SUM(p.originPrice*p.quantity) FROM Product p WHERE p.lists.id = :listId AND p.deletedYn = false")
                 .setParameter("listId", listId)
                 .getSingleResult();
         return sum != null ? sum : 0.0;
