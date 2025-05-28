@@ -27,9 +27,11 @@ public class ListsController {
     //새로운 리스트 추가(로그인한 상태에서)
     @PostMapping("/add")
     public ResponseEntity<ApiResponse<CreateListResponseDto>> createList(@RequestBody CreateListRequestDto requestDto) {
+        log.info("📥 컨트롤러 createList 호출됨: userId={}, currencyFrom={}, currencyTo={}, location={}",  requestDto.getUserId(), requestDto.getCurrencyIdFrom(), requestDto.getCurrencyIdTo(), requestDto.getLocation());
         Long userId = getCurrentUserId();
         requestDto.setUserId(userId);
         CreateListResponseDto newLists = listsService.createList(requestDto);
+        log.info("📥 컨트롤러 createList 완료: 새 리스트 ID={}", newLists.getCreatedAt());
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.createSuccessWithMessage(newLists, "리스트 추가 성공"));
     }
 
