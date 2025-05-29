@@ -7,18 +7,22 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.apache.coyote.BadRequestException;
+import org.project.exchange.config.JwtAuthenticationFilter;
 import org.project.exchange.global.api.ApiResponse;
 import org.project.exchange.model.user.Dto.FindPasswordRequest;
 import org.project.exchange.model.user.Dto.KakaoLoginRequest;
+import org.project.exchange.model.user.Dto.RefreshTokenResponse;
 import org.project.exchange.model.user.Dto.ResetNameResponse;
 import org.project.exchange.model.user.Dto.SignInRequest;
 import org.project.exchange.model.user.Dto.SignInResponse;
 import org.project.exchange.model.user.Dto.SignUpRequest;
 import org.project.exchange.model.user.Dto.SignUpResponse;
+import org.project.exchange.model.user.Dto.TokenResponse;
 import org.project.exchange.model.user.Dto.UpdateUserInfoRequest;
 import org.project.exchange.model.user.Dto.UserInfoResponse;
 import org.project.exchange.model.user.service.UserService;
-import org.project.exchange.model.user.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,7 +41,7 @@ import java.util.Map;
 public class UserController {
 
     private final UserService userService;
-
+    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
     // 회원가입
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<?>> signUp(
@@ -70,8 +74,6 @@ public class UserController {
         return ResponseEntity.badRequest().body(ApiResponse.createError(userResponse.getMsg()));
     }
 
-
-        // 로그인
     @PostMapping("/signin")
     public ResponseEntity<ApiResponse<?>> signIn(
             @Validated @RequestBody SignInRequest request,
@@ -90,6 +92,18 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ApiResponse.createError(response.getMsg()));
     }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<TokenResponse>> refreshToken (
+            @RequestHeader("Refresh-Token") String refreshToken,
+            @RequestHeader(value = "Authorization", required = false) String oldAccessBearer)
+            throws JsonProcessingException {
+        logger.info("🔄 [RefreshController] Refresh-Token 요청: {}", refreshToken);
+        logger.info("                 oldAccessBearer: {}", oldAccessBearer);
+        TokenResponse body = userService.refreshToken(refreshToken, oldAccessBearer);
+        logger.info("🔄 [RefreshController] 응답으로 반환할 새 토큰들: {}", body);
+        return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(body, "토큰 갱신 성공"));
+    }    
 
     // 로그아웃
     @PostMapping("/signout")
