@@ -99,7 +99,6 @@ public class ProductService {
         return productRepository.findAll();
     }
 
-    // 이미지에서 상품명과 가격만 추출
     public List<ImageProductResponseDto> analyzeImage(String base64Image) {
         String responseContent = null;
         ChatGPTRequest request = new ChatGPTRequest(model, base64Image);
