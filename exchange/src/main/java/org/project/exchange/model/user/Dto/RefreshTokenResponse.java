@@ -7,10 +7,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor 
+@NoArgsConstructor
 @AllArgsConstructor
-@JsonIgnoreProperties(ignoreUnknown = true) 
-public class TokenResponse {
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class RefreshTokenResponse {
 
     @JsonProperty("access_token")
     private String accessToken;
@@ -18,6 +18,4 @@ public class TokenResponse {
     @JsonProperty("refresh_token")
     private String refreshToken;
 
-    @JsonProperty("id_token")
-    private String idToken; 
 }

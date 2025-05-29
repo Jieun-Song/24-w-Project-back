@@ -117,17 +117,15 @@ public class KakaoService {
         KakaoUser kakaoUser;
 
         if (optionalKakaoUser.isPresent()) {
-            // ✅ 기존 카카오 계정이 존재하면 업데이트
             kakaoUser = optionalKakaoUser.get();
             log.info("기존 카카오 유저 로그인: " + kakaoUser.getNickname());
         } else {
-            // ✅ 신규 사용자 생성
             User newUser = User.builder()
                     .userName(nickname)
                     .userEmail(kakaoId + "@kakao.com") // 임시 이메일 설정
                     .userPassword("") // 소셜 로그인이라 비밀번호 설정 없음
-                    .userGender(true) // 기본값 설정 (카카오 API에서 성별 정보 가져오려면 추가 구현 필요)
-                    .userDateOfBirth(Date.valueOf(LocalDate.now())) // 기본값 설정
+                    .userGender(true) 
+                    .userDateOfBirth(Date.valueOf(LocalDate.now())) 
                     .userCreatedAt(new Date(System.currentTimeMillis()))
                     .userUpdatedAt(new Date(System.currentTimeMillis()))
                     .build();
@@ -285,6 +283,16 @@ public class KakaoService {
         } else {
             log.warn("카카오 계정이 존재하지 않습니다.");
         }
+    }
+
+    public String extractKakaoId(String accessToken) {
+        HashMap<String, Object> userInfo = getUserInfo(accessToken);
+        if (userInfo.containsKey("kakaoId")) {
+            return (String) userInfo.get("kakaoId");
+        } else {
+            throw new RuntimeException("카카오 ID를 추출할 수 없습니다.");
+        }
+        
     }
 
 }

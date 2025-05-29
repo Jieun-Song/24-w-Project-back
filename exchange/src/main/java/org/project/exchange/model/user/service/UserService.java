@@ -174,7 +174,7 @@ public class UserService {
 
 
         String accessToken = tokenProvider.createToken(user);
-        String refreshToken = tokenProvider.createRefreshToken();
+        String refreshToken = tokenProvider.createRefreshToken(user);
 
         refreshTokenRepository.save(
                 refreshTokenRepository.findById(user.getUserId())
@@ -193,6 +193,28 @@ public class UserService {
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .build();
+    }
+    
+    @Transactional
+    public TokenResponse refreshToken(String refreshToken, String oldAccessToken) throws JsonProcessingException {
+        tokenProvider.validateRefreshToken(refreshToken, oldAccessToken);
+
+        String subject = tokenProvider.decodeJwtPayloadSubject(oldAccessToken);
+        long userId = Long.parseLong(subject.split(":")[0]);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("사용자 정보가 없습니다. id=" + userId));
+
+        String newAccess = tokenProvider.recreateAccessToken(oldAccessToken);
+        String newRefresh = tokenProvider.createRefreshToken(user);
+
+        RefreshToken entity = RefreshToken.builder()
+                .tokenId(userId)
+                .User(user)
+                .refreshToken(newRefresh)
+                .build();
+        refreshTokenRepository.save(entity);
+
+        return new TokenResponse(newAccess, newRefresh, null);
     }
 
     @Transactional
@@ -227,7 +249,10 @@ public class UserService {
 
         log.info("Received Kakao access token: {}", accessToken);
 
+        String kakaoId = kakaoService.extractKakaoId(accessToken);
+        boolean isFirstKakao = kakaoUserRepository.findByKakaoId(kakaoId).isEmpty();
         KakaoUser kakaoUser = kakaoService.saveOrUpdateKakaoUser(accessToken);
+
         if (kakaoUser == null) {
             throw new RuntimeException("카카오 사용자 정보가 없습니다.");
         }
@@ -250,7 +275,7 @@ public class UserService {
         log.info("User associated with Kakao user: {}", user);
 
         String jwtAccessToken = tokenProvider.createToken(user);
-        String jwtRefreshToken = tokenProvider.createRefreshToken();
+        String jwtRefreshToken = tokenProvider.createRefreshToken(user);
 
         refreshTokenRepository.save(
                 new RefreshToken(user.getUserId(), user, jwtRefreshToken));
@@ -261,6 +286,8 @@ public class UserService {
                 .msg("카카오 로그인 성공")
                 .accessToken(jwtAccessToken)
                 .refreshToken(jwtRefreshToken)
+                .firstSocialLogin(isFirstKakao)
+                .socialProvider("kakao")
                 .build();
     }
 
@@ -544,6 +571,7 @@ public class UserService {
         TokenResponse tokenResp = googleOAuthService.exchangeAuthCode(authCode);
         String idToken = tokenResp.getIdToken();
         String refreshToken = tokenResp.getRefreshToken();
+        
         if (idToken == null || refreshToken == null) {
             throw new RuntimeException("구글 토큰 교환 실패");
         }
@@ -551,6 +579,12 @@ public class UserService {
         Map<String, Object> info = googleOAuthService.decodeIdToken(idToken);
         String email = (String) info.get("email");
         String name = (String) info.get("name");
+
+        if (email == null || name == null) {
+            throw new RuntimeException("구글 사용자 정보가 부족합니다.");
+        }
+
+        boolean isFirstGoogle = userRepository.findByUserEmail(email) == null;
 
         User user = userRepository.findByUserEmail(email);
         if (user == null) {
@@ -566,7 +600,7 @@ public class UserService {
                     .userGender(true)
                     .userDateOfBirth(Date.valueOf(LocalDate.of(2000, 1, 1)))
                     .userPassword(UUID.randomUUID().toString())
-                    .defaultCurrency(defaultCurrency) // 여기를 추가!
+                    .defaultCurrency(defaultCurrency) 
                     .userCreatedAt(new Date(System.currentTimeMillis()))
                     .userUpdatedAt(new Date(System.currentTimeMillis()))
                     .build();
@@ -582,7 +616,7 @@ public class UserService {
         }
 
         String jwtAccess = tokenProvider.createToken(user);
-        String jwtRefresh = tokenProvider.createRefreshToken();
+        String jwtRefresh = tokenProvider.createRefreshToken(user);
         refreshTokenRepository.save(new RefreshToken(user.getUserId(), user, jwtRefresh));
 
         return SignInResponse.builder()
@@ -592,6 +626,8 @@ public class UserService {
                 .accessToken(jwtAccess)
                 .refreshToken(jwtRefresh)
                 .msg("구글 로그인 성공")
+                .firstSocialLogin(isFirstGoogle)
+                .socialProvider("google")
                 .build();
     }
 
