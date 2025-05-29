@@ -1,4 +1,4 @@
-secret-key: exchangeexchangeexchangeexchangeexchangeexchangeexchangeexchangeexchangeexchangeexchangeexchangeexchangeexchangeexchangeexchange
+secret-key: your-secret-key-here
 expiration-minutes: 60
 refresh-expiration-hours: 1
 issuer: exchange
