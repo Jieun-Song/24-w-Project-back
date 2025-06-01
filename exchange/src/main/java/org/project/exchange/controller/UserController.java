@@ -3,38 +3,36 @@ package org.project.exchange.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.apache.coyote.BadRequestException;
+import org.project.exchange.config.JwtAuthenticationFilter;
 import org.project.exchange.global.api.ApiResponse;
-import org.project.exchange.model.user.KakaoUser;
-import org.project.exchange.model.user.User;
 import org.project.exchange.model.user.Dto.FindPasswordRequest;
 import org.project.exchange.model.user.Dto.KakaoLoginRequest;
+import org.project.exchange.model.user.Dto.RefreshTokenResponse;
 import org.project.exchange.model.user.Dto.ResetNameResponse;
 import org.project.exchange.model.user.Dto.SignInRequest;
 import org.project.exchange.model.user.Dto.SignInResponse;
 import org.project.exchange.model.user.Dto.SignUpRequest;
 import org.project.exchange.model.user.Dto.SignUpResponse;
+import org.project.exchange.model.user.Dto.TokenResponse;
 import org.project.exchange.model.user.Dto.UpdateUserInfoRequest;
 import org.project.exchange.model.user.Dto.UserInfoResponse;
-import org.project.exchange.model.user.repository.UserRepository;
-import org.project.exchange.model.user.service.GoogleOAuthService;
 import org.project.exchange.model.user.service.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import lombok.extern.slf4j.Slf4j; // 📌 log 사용을 위한 Lombok 어노테이션
+import lombok.extern.slf4j.Slf4j; 
 
-import java.sql.Date;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.Collections;
 import java.util.Map;
-import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -43,22 +41,24 @@ import java.util.Optional;
 public class UserController {
 
     private final UserService userService;
-    private final GoogleOAuthService googleOAuthService;
-
+    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
     // 회원가입
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<?>> signUp(
             @Validated @RequestBody SignUpRequest request,
-            BindingResult bindingResult) {
+            BindingResult bindingResult) throws BadRequestException {
 
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest()
                     .body(ApiResponse.createFail(bindingResult));
         }
+        if (userService.isGoogleUserByEmail(request.getUserEmail())) {
+            throw new BadRequestException("이미 구글 계정으로 가입된 이메일입니다. 구글 로그인을 이용해주세요.");
+        }
+
         //회원가입 진행
         SignUpResponse userResponse = userService.signUp(request, request.getOtp(), request.getAgreedTerms());
 
-        // ✅ JSON 직렬화 확인을 위한 로그 추가
         ApiResponse<SignUpResponse> response = ApiResponse.createSuccessWithMessage(userResponse, "회원가입 성공");
         try {
             String jsonResponse = new ObjectMapper().writeValueAsString(response);
@@ -74,8 +74,6 @@ public class UserController {
         return ResponseEntity.badRequest().body(ApiResponse.createError(userResponse.getMsg()));
     }
 
-
-        // 로그인
     @PostMapping("/signin")
     public ResponseEntity<ApiResponse<?>> signIn(
             @Validated @RequestBody SignInRequest request,
@@ -94,6 +92,18 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ApiResponse.createError(response.getMsg()));
     }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<TokenResponse>> refreshToken (
+            @RequestHeader("Refresh-Token") String refreshToken,
+            @RequestHeader(value = "Authorization", required = false) String oldAccessBearer)
+            throws JsonProcessingException {
+        logger.info("🔄 [RefreshController] Refresh-Token 요청: {}", refreshToken);
+        logger.info("                 oldAccessBearer: {}", oldAccessBearer);
+        TokenResponse body = userService.refreshToken(refreshToken, oldAccessBearer);
+        logger.info("🔄 [RefreshController] 응답으로 반환할 새 토큰들: {}", body);
+        return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(body, "토큰 갱신 성공"));
+    }    
 
     // 로그아웃
     @PostMapping("/signout")
@@ -280,20 +290,23 @@ public class UserController {
         }
     }
 
-    // 구글 로그인
     @PostMapping("/google/signin")
     public ResponseEntity<ApiResponse<?>> googleLogin(@RequestBody Map<String, String> request) {
-        String idToken = request.get("idToken");
-        if (idToken == null || idToken.isEmpty()) {
-            return ResponseEntity.badRequest().body(ApiResponse.createError("ID token 누락"));
+        String authCode = request.get("authCode");
+        if (authCode == null || authCode.isBlank()) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(ApiResponse.createError("authorization code 누락"));
         }
+        SignInResponse resp = userService.googleSignInWithAuthCode(authCode);
+        return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(resp, "구글 로그인 성공"));
+    }    
 
-        Map<String, Object> userInfo = googleOAuthService.decodeIdToken(idToken);
-        String email = (String) userInfo.get("email");
-        String name = (String) userInfo.get("name");
-
-        SignInResponse response = userService.googleSignIn(email, name);
-        return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(response, "구글 로그인 성공"));
+    @PostMapping("/google/withdrawal")
+    public ResponseEntity<ApiResponse<?>> googleWithdrawal(
+            @RequestHeader("Authorization") String bearer) throws JsonProcessingException {
+        String token = bearer.replaceFirst("^Bearer ", "");
+        userService.deleteGoogleUser(token);
+        return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(null, "구글 회원 탈퇴 성공"));
     }
-    
 } 

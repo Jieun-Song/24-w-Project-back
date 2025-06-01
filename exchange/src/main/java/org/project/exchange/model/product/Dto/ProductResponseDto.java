@@ -10,6 +10,7 @@ public class ProductResponseDto {
     private Long productId;
     private String name;
     private Double originPrice;
+    private Integer quantity;
     private Long listId;
     private Boolean deletedYn;
     private LocalDateTime createdAt;
@@ -17,6 +18,7 @@ public class ProductResponseDto {
     public ProductResponseDto(Product product) {
         this.productId = product.getProductId();
         this.name = product.getName();
+        this.quantity = product.getQuantity();
         this.originPrice = product.getOriginPrice();
         this.listId = product.getLists().getListId();
         this.deletedYn = product.getDeletedYn();

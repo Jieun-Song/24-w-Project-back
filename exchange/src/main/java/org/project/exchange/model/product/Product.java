@@ -23,6 +23,9 @@ public class Product {
     @Column(name = "name", nullable = false, length = 100) // 상품 이름
     private String name;
 
+    @Column(name = "quantity", nullable = false) // 수량
+    private Integer quantity;
+
     @Column(name = "origin_price", nullable = false) // 원래 가격
     private Double originPrice;
 
@@ -38,15 +41,17 @@ public class Product {
     private Lists lists;
 
     @Builder
-    public Product(String name, LocalDateTime createdAt, Double originPrice, Lists lists) {
+    public Product(String name, LocalDateTime createdAt, Integer quantity, Double originPrice, Lists lists) {
         this.name = name;
         this.createdAt = createdAt;
+        this.quantity = quantity;
         this.originPrice = originPrice;
         this.lists = lists;
     }
 
-    public void updateNameAndPrice(String name, Double originPrice) {
+    public void updateNameAndPrice(String name, Integer quantity, Double originPrice) {
         this.name = name;
+        this.quantity = quantity;
         this.originPrice = originPrice;
     }
 }

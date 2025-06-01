@@ -27,7 +27,9 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import lombok.RequiredArgsConstructor;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @PropertySource("classpath:jwt.yml")
 @Service
@@ -38,6 +40,7 @@ public class TokenProvider {
     private final String issuer;
     private final RefreshTokenRepository refreshTokenRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private static final Logger logger = LoggerFactory.getLogger(TokenProvider.class);
 
     public TokenProvider(
             @Value("${secret-key}") String secretKey,
@@ -63,12 +66,16 @@ public class TokenProvider {
                 .compact(); // JWT 토큰 생성
     }
 
-    public String createRefreshToken() {
+    public String createRefreshToken(User user) {
+        String subject = user.getUserId() + ":" + user.getUserEmail();
         return Jwts.builder()
-                .signWith(new SecretKeySpec(secretKey.getBytes(), SignatureAlgorithm.HS512.getJcaName()))
+                .signWith(new SecretKeySpec(secretKey.getBytes(),
+                        SignatureAlgorithm.HS512.getJcaName()))
+                .setSubject(subject)
                 .setIssuer(issuer)
                 .setIssuedAt(Timestamp.valueOf(LocalDateTime.now()))
-                .setExpiration(Date.from(Instant.now().plus(refreshExpirationHours, ChronoUnit.HOURS)))
+                .setExpiration(Date.from(
+                        Instant.now().plus(refreshExpirationHours, ChronoUnit.HOURS)))
                 .compact();
     }
 
@@ -83,6 +90,7 @@ public class TokenProvider {
 
     @Transactional
     public String recreateAccessToken(String oldAccessToken) throws JsonProcessingException {
+        logger.debug("[TokenProvider] recreateAccessToken 호출 → oldAccessToken={}", oldAccessToken);
         String subject = decodeJwtPayloadSubject(oldAccessToken);
         Optional<RefreshToken> oldRefreshToken = refreshTokenRepository.findById(Long.parseLong(subject.split(":")[0]));
         if (oldRefreshToken.isEmpty()) {
@@ -92,6 +100,7 @@ public class TokenProvider {
     }
 
     private String createTokenFromSubject(String subject) {
+        logger.debug("[TokenProvider] 새로 생성된 액세스토큰: {}", subject);
         return Jwts.builder()
                 .signWith(new SecretKeySpec(secretKey.getBytes(), SignatureAlgorithm.HS512.getJcaName()))
                 .setSubject(subject)
@@ -103,6 +112,7 @@ public class TokenProvider {
 
     @Transactional(readOnly = true)
     public void validateRefreshToken(String refreshToken, String oldAccessToken) throws JsonProcessingException {
+        logger.debug("[TokenProvider] validateRefreshToken 호출 → refreshToken={}, oldAccessToken={}", refreshToken, oldAccessToken);
         validateAndParseToken(refreshToken);
         String userId = decodeJwtPayloadSubject(oldAccessToken).split(":")[0];
         refreshTokenRepository.findById(Long.parseLong(userId))

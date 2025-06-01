@@ -14,7 +14,7 @@ import java.util.List;
 @Repository
 public interface ListsRepository extends JpaRepository<Lists, Long>, ListsRepositoryCustom{
 
-    @Query("SELECT COUNT(l) FROM Lists l WHERE l.user.userId = :userId")
+    @Query("SELECT COUNT(l) FROM Lists l WHERE l.user.userId = :userId AND l.deletedYn = false")
     Integer countAllListByUser(@Param("userId") Long userId);
 
     List<Lists> findAllByUser(User user);

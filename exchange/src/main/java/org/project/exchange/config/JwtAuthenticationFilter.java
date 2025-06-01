@@ -33,33 +33,52 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+    protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
             throws ServletException, IOException {
+        String accessToken = parseBearerToken(req, HttpHeaders.AUTHORIZATION);
+
         try {
-            String accessToken = parseBearerToken(request, HttpHeaders.AUTHORIZATION);
-
             if (accessToken != null) {
-                User user = parseUserSpecification(accessToken);
-                AbstractAuthenticationToken authenticated = UsernamePasswordAuthenticationToken.authenticated(user,
-                        accessToken, user.getAuthorities());
-
-                authenticated.setDetails(new WebAuthenticationDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authenticated);
+                User principal = parseUserSpecification(accessToken);
+                setAuthentication(principal, accessToken, req);
+                logger.info("🔒 [JwtFilter] 액세스토큰 인증 성공, 사용자: {}", principal.getUsername());
             }
+            chain.doFilter(req, res);
+
         } catch (ExpiredJwtException e) {
-            reissueAccessToken(request, response, e);
-        } catch (Exception e) {
-            logger.error("Exception in JWT filter: {}", e.getMessage());
-            request.setAttribute("exception", e);
+            logger.info("🔄 [JwtFilter] 액세스토큰 만료 감지, 리프레시 시도"); 
+
+            String refreshToken = parseBearerToken(req, "Refresh-Token");
+            logger.info("    └ 클라이언트로부터 받은 Refresh-Token: {}", refreshToken); 
+
+            try {
+                tokenProvider.validateRefreshToken(refreshToken, accessToken);
+
+                String newAccessToken = tokenProvider.recreateAccessToken(accessToken);
+                logger.info("    └ 재발급된 새 액세스토큰: {}", newAccessToken); 
+
+                res.setHeader("New-Access-Token", newAccessToken);
+
+                // 새 토큰으로 다시 인증
+                User newPrincipal = parseUserSpecification(newAccessToken);
+                setAuthentication(newPrincipal, newAccessToken, req);
+
+                chain.doFilter(req, res);
+                return;
+            } catch (Exception ex) {
+                logger.error("리프레시로 재발급 실패", ex);
+            }
+
+            SecurityContextHolder.clearContext();
+            res.sendError(HttpServletResponse.SC_UNAUTHORIZED, "토큰이 만료되었습니다.");
         }
-        filterChain.doFilter(request, response);
     }
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        // 특정 경로에서는 필터를 작동하지 않도록 설정
         String path = request.getRequestURI();
-        return path.startsWith("/api/auth/signin") || path.startsWith("/api/auth/signup");
+        return path.startsWith("/api/auth/signin") || path.startsWith("/api/auth/signup") 
+                || path.startsWith("/api/auth/refresh");
     }
 
     private String parseBearerToken(HttpServletRequest request, String headerName) {
@@ -84,6 +103,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         return new User(split[0], "", List.of(new SimpleGrantedAuthority(split[1])));
+    }
+    
+    private void setAuthentication(User principal, String token, HttpServletRequest req) {
+        AbstractAuthenticationToken auth = UsernamePasswordAuthenticationToken.authenticated(principal, token,
+                principal.getAuthorities());
+        auth.setDetails(new WebAuthenticationDetails(req));
+        SecurityContextHolder.getContext().setAuthentication(auth);
     }
 
     private void reissueAccessToken(HttpServletRequest request, HttpServletResponse response, Exception exception) {

@@ -19,11 +19,14 @@ import org.project.exchange.model.user.Dto.SignInRequest;
 import org.project.exchange.model.user.Dto.SignInResponse;
 import org.project.exchange.model.user.Dto.SignUpRequest;
 import org.project.exchange.model.user.Dto.SignUpResponse;
+import org.project.exchange.model.user.Dto.TokenResponse;
 import org.project.exchange.model.user.Dto.UpdateUserInfoRequest;
 import org.project.exchange.model.user.Dto.UserInfoResponse;
+import org.project.exchange.model.user.GoogleUser;
 import org.project.exchange.model.user.KakaoUser;
 import org.project.exchange.model.user.RefreshToken;
 import org.project.exchange.model.user.User;
+import org.project.exchange.model.user.repository.GoogleUserRepository;
 import org.project.exchange.model.user.repository.KakaoUserRepository;
 import org.project.exchange.model.user.repository.RefreshTokenRepository;
 import org.project.exchange.model.user.repository.UserRepository;
@@ -39,6 +42,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
@@ -59,11 +63,14 @@ public class UserService {
     private final AuthRepository authRepository;
     private final PasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
-    private final PermissionService permissionService; // 약관 동의 관리
-    private final EmailService emailService; // 이메일 인증 관리
-    private final KakaoService kakaoService; // 카카오 로그인 관리
+    private final PermissionService permissionService; 
+    private final EmailService emailService; 
+    private final KakaoService kakaoService;
     private final Random random = new Random();
     private final CurrencyRepository currencyRepository;
+    private final GoogleUserRepository googleUserRepository;
+    private final GoogleOAuthService googleOAuthService;
+
 
 
     // 📌 비밀번호 패턴 (영문, 숫자, 특수문자 포함, 8~16자)
@@ -167,7 +174,7 @@ public class UserService {
 
 
         String accessToken = tokenProvider.createToken(user);
-        String refreshToken = tokenProvider.createRefreshToken();
+        String refreshToken = tokenProvider.createRefreshToken(user);
 
         refreshTokenRepository.save(
                 refreshTokenRepository.findById(user.getUserId())
@@ -186,6 +193,28 @@ public class UserService {
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .build();
+    }
+    
+    @Transactional
+    public TokenResponse refreshToken(String refreshToken, String oldAccessToken) throws JsonProcessingException {
+        tokenProvider.validateRefreshToken(refreshToken, oldAccessToken);
+
+        String subject = tokenProvider.decodeJwtPayloadSubject(oldAccessToken);
+        long userId = Long.parseLong(subject.split(":")[0]);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("사용자 정보가 없습니다. id=" + userId));
+
+        String newAccess = tokenProvider.recreateAccessToken(oldAccessToken);
+        String newRefresh = tokenProvider.createRefreshToken(user);
+
+        RefreshToken entity = RefreshToken.builder()
+                .tokenId(userId)
+                .User(user)
+                .refreshToken(newRefresh)
+                .build();
+        refreshTokenRepository.save(entity);
+
+        return new TokenResponse(newAccess, newRefresh, null);
     }
 
     @Transactional
@@ -220,7 +249,10 @@ public class UserService {
 
         log.info("Received Kakao access token: {}", accessToken);
 
+        String kakaoId = kakaoService.extractKakaoId(accessToken);
+        boolean isFirstKakao = kakaoUserRepository.findByKakaoId(kakaoId).isEmpty();
         KakaoUser kakaoUser = kakaoService.saveOrUpdateKakaoUser(accessToken);
+
         if (kakaoUser == null) {
             throw new RuntimeException("카카오 사용자 정보가 없습니다.");
         }
@@ -243,7 +275,7 @@ public class UserService {
         log.info("User associated with Kakao user: {}", user);
 
         String jwtAccessToken = tokenProvider.createToken(user);
-        String jwtRefreshToken = tokenProvider.createRefreshToken();
+        String jwtRefreshToken = tokenProvider.createRefreshToken(user);
 
         refreshTokenRepository.save(
                 new RefreshToken(user.getUserId(), user, jwtRefreshToken));
@@ -254,6 +286,8 @@ public class UserService {
                 .msg("카카오 로그인 성공")
                 .accessToken(jwtAccessToken)
                 .refreshToken(jwtRefreshToken)
+                .firstSocialLogin(isFirstKakao)
+                .socialProvider("kakao")
                 .build();
     }
 
@@ -352,79 +386,12 @@ public class UserService {
                 .build();
     }
 
-    // 개인정보 수정
-    // @Transactional
-    // public UserInfoResponse updateUserInfo(UpdateUserInfoRequest request) {
-    //     Optional<User> optionalUser = Optional.ofNullable(userRepository.findByUserEmail(request.getUserEmail()));
-
-    //     if (optionalUser.isEmpty()) {
-    //         throw new RuntimeException("사용자를 찾을 수 없습니다.");
-    //     }
-
-    //     User user = optionalUser.get();
-    //     boolean updated = false;
-
-    //     // 이름 변경
-    //     if (request.getUserName() != null && !request.getUserName().isEmpty()) {
-    //         user = user.toBuilder().userName(request.getUserName()).build();
-    //         updated = true;
-    //     }
-
-    //     // 생년월일 변경
-    //     if (request.getUserDateOfBirth() != null && !request.getUserDateOfBirth().isEmpty()) {
-    //         LocalDate birthDate = LocalDate.parse(request.getUserDateOfBirth(),
-    //                 DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-    //         user = user.toBuilder().userDateOfBirth(Date.valueOf(birthDate)).build();
-    //         updated = true;
-    //     }
-
-    //     // 비밀번호 변경
-    //     if (request.getUserPassword() != null && !request.getUserPassword().isEmpty()) {
-    //         if (!isValidPassword(request.getUserPassword())) {
-    //             throw new IllegalArgumentException("비밀번호는 8~16자이며, 영문, 숫자, 특수문자를 포함해야 합니다.");
-    //         }
-    //         user = user.toBuilder().userPassword(passwordEncoder.encode(request.getUserPassword())).build();
-    //         updated = true;
-    //     }
-
-    //     if (updated) {
-    //         userRepository.save(user);
-    //     }
-
-    //     if (!updated) {
-    //         // 수정된 항목이 없으면, 그대로 현재 상태로 DTO를 반환
-    //         log.info("ℹ️ 사용자 정보 변경 없음. 현재 정보 반환.");
-    //     }
-
-    //     // 기본 통화 변경
-    //     if (request.getDefaultCurrencyId() != null) {
-    //         Currency currency = currencyRepository.findById(request.getDefaultCurrencyId())
-    //                 .orElseThrow(() -> new RuntimeException("유효하지 않은 통화 ID입니다."));
-    //         user = user.toBuilder().defaultCurrency(currency).build();
-    //         userRepository.save(user);
-    //     }
-
-    //     // 항상 최신 상태 반환
-    //     user = userRepository.findById(user.getUserId()).orElseThrow(() -> new RuntimeException("저장된 사용자 없음"));
-
-    //     return UserInfoResponse.builder()
-    //             .userId(user.getUserId())
-    //             .userEmail(user.getUserEmail())
-    //             .userName(user.getUserName())
-    //             .userDateOfBirth(user.getUserDateOfBirth().toLocalDate().toString())
-    //             .isKakaoUser(kakaoUserRepository.findByUser(user).isPresent())
-    //             .isGoogleUser(user.getUserEmail().contains("@gmail.com"))
-    //             .defaultCurrencyId(user.getDefaultCurrency().getCurrencyId()) 
-    //             .build();
-
-    // }
     @Transactional
     public UserInfoResponse updateUserInfo(UpdateUserInfoRequest req) {
         User before = userRepository.findByUserEmail(req.getUserEmail());
         if (before == null)
             throw new RuntimeException("사용자를 찾을 수 없습니다.");
 
-        // toBuilder() 로 기존 컬렉션도 함께 복사됨
         User.UserBuilder builder = before.toBuilder();
 
         boolean changed = false;
@@ -449,15 +416,12 @@ public class UserService {
         }
         if (!changed) {
             log.info("ℹ️ 변경된 항목 없음");
-            // 컬렉션 복사만 해도 동일 엔티티이니 DB에 재저장할 필요 없습니다.
         }
 
-        // 변경 시각만 갱신
         User updated = builder
                 .userUpdatedAt(new Date(System.currentTimeMillis()))
                 .build();
 
-        // 빌더로 만들어진 새 엔티티를 save() 하면, JPA가 PK(userId)로 기존 레코드를 업데이트합니다.
         userRepository.save(updated);
 
         return UserInfoResponse.builder()
@@ -471,13 +435,11 @@ public class UserService {
                 .build();
     }
 
-    // 사용자 정보 조회 (토큰)
     @Transactional(readOnly = true)
     public UserInfoResponse getUserInfoFromToken(String accessToken) {
         String subject = tokenProvider.validateTokenAndGetSubject(accessToken);
         log.info("🔑 Token subject: {}", subject);
 
-        // 토큰 subject에서 이메일만 추출 (형식: userId:userEmail)
         String[] parts = subject.split(":");
         if (parts.length != 2) {
             throw new RuntimeException("토큰 subject 형식이 올바르지 않습니다.");
@@ -503,7 +465,6 @@ public class UserService {
                 .defaultCurrencyId(user.getDefaultCurrency().getCurrencyId()) // 기본 통화 정보 추가  
                 .build();
     }
-    // 사용자 환율 조회 (토큰)
     @Transactional(readOnly = true)
     public Long getUserCurrency(String accessToken) {
         String subject = tokenProvider.validateTokenAndGetSubject(accessToken);
@@ -537,32 +498,23 @@ public class UserService {
             throw new RuntimeException("비밀번호가 일치하지 않습니다.");
         }
 
-        // 1. RefreshToken 삭제
         refreshTokenRepository.deleteById(user.getUserId());
 
-        // 2. KakaoUser 삭제 (Optional)
         kakaoUserRepository.findByUser(user).ifPresent(kakaoUserRepository::delete);
+        googleUserRepository.findByUser(user).ifPresent(googleUserRepository::delete);        
 
-        // 3. GoogleUser 삭제 (Optional)
-        
-
-        // 3. Auth 삭제
         authRepository.deleteAllByUser(user);
 
-        // 4. Permission 삭제
         permissionRepository.deleteAllByUser(user);
 
-        // 5. SystemLog 삭제
         systemLogRepository.deleteAllByUser(user);
 
-        // 6. Lists 및 Product 삭제 (Cascade로 자동 처리되지만 명시적으로 하면 안전)
         List<Lists> userLists = listsRepository.findAllByUser(user);
         for (Lists list : userLists) {
             productRepository.deleteAllByLists(list); // 연결된 상품 먼저 제거
             listsRepository.delete(list);
         }
 
-        // 7. 최종적으로 User 삭제
         userRepository.delete(user);
 
         return "회원 탈퇴 성공";
@@ -606,20 +558,37 @@ public class UserService {
             refreshTokenRepository.deleteById(user.getUserId());
             userRepository.delete(user);
 
-            log.info("✅ 카카오 회원 탈퇴 성공");
+            log.info("카카오 회원 탈퇴 성공");
 
         } catch (JsonProcessingException e) {
             log.error("JWT subject 디코딩 실패", e);
             throw new RuntimeException("토큰 파싱 실패");
         }
     }
-
-    // 구글 로그인
+    
     @Transactional
-    public SignInResponse googleSignIn(String email, String name) {
-        User user = userRepository.findByUserEmail(email);
+    public SignInResponse googleSignInWithAuthCode(String authCode) {
+        TokenResponse tokenResp = googleOAuthService.exchangeAuthCode(authCode);
+        String idToken = tokenResp.getIdToken();
+        String refreshToken = tokenResp.getRefreshToken();
+        
+        if (idToken == null || refreshToken == null) {
+            throw new RuntimeException("구글 토큰 교환 실패");
+        }
 
+        Map<String, Object> info = googleOAuthService.decodeIdToken(idToken);
+        String email = (String) info.get("email");
+        String name = (String) info.get("name");
+
+        if (email == null || name == null) {
+            throw new RuntimeException("구글 사용자 정보가 부족합니다.");
+        }
+
+        boolean isFirstGoogle = userRepository.findByUserEmail(email) == null;
+
+        User user = userRepository.findByUserEmail(email);
         if (user == null) {
+            // 기본 통화 조회 (예: 가장 먼저 등록된 것)
             Currency defaultCurrency = currencyRepository.findAll()
                     .stream()
                     .findFirst()
@@ -628,30 +597,70 @@ public class UserService {
             user = User.builder()
                     .userEmail(email)
                     .userName(name)
-                    .userGender(true) // 알 수 없으면 기본값
-                    .userDateOfBirth(Date.valueOf("2000-01-01")) // 알 수 없으면 기본값
-                    .userPassword(passwordEncoder.encode(UUID.randomUUID().toString()))
+                    .userGender(true)
+                    .userDateOfBirth(Date.valueOf(LocalDate.of(2000, 1, 1)))
+                    .userPassword(UUID.randomUUID().toString())
+                    .defaultCurrency(defaultCurrency) 
                     .userCreatedAt(new Date(System.currentTimeMillis()))
                     .userUpdatedAt(new Date(System.currentTimeMillis()))
-                    .defaultCurrency(defaultCurrency)
                     .build();
             userRepository.save(user);
         }
 
-        String jwtAccessToken = tokenProvider.createToken(user);
-        String jwtRefreshToken = tokenProvider.createRefreshToken();
+        if (!googleUserRepository.findByUser(user).isPresent()) {
+            GoogleUser gu = GoogleUser.builder()
+                    .user(user)
+                    .refreshToken(refreshToken)
+                    .build();
+            googleUserRepository.save(gu);
+        }
 
-        refreshTokenRepository.save(
-            new RefreshToken(user.getUserId(), user, jwtRefreshToken)
-        );
+        String jwtAccess = tokenProvider.createToken(user);
+        String jwtRefresh = tokenProvider.createRefreshToken(user);
+        refreshTokenRepository.save(new RefreshToken(user.getUserId(), user, jwtRefresh));
 
         return SignInResponse.builder()
                 .userId(user.getUserId())
                 .userName(user.getUserName())
                 .userEmail(user.getUserEmail())
-                .accessToken(jwtAccessToken)
-                .refreshToken(jwtRefreshToken)
+                .accessToken(jwtAccess)
+                .refreshToken(jwtRefresh)
                 .msg("구글 로그인 성공")
+                .firstSocialLogin(isFirstGoogle)
+                .socialProvider("google")
                 .build();
     }
+
+    @Transactional
+    public void deleteGoogleUser(String accessJwt) {
+        String email;
+        try {
+            email = tokenProvider.extractUserEmail(accessJwt);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("토큰에서 이메일 추출 실패", e);
+        }
+
+        // 사용자·GoogleUser 조회
+        User user = userRepository.findByUserEmail(email);
+        if (user == null) {
+            throw new RuntimeException("사용자를 찾을 수 없습니다.");
+        }
+
+        GoogleUser gu = googleUserRepository.findByUser(user)
+                .orElseThrow(() -> new RuntimeException("구글 사용자 정보가 없습니다."));
+
+        // 리프레시 토큰 강제 만료(revoke) 호출
+        googleOAuthService.revokeToken(gu.getRefreshToken());
+
+        // DB에서 순차 삭제
+        googleUserRepository.delete(gu);
+        refreshTokenRepository.deleteById(user.getUserId());
+        userRepository.delete(user);
+
+        log.info("✅ 구글 회원 탈퇴 성공: {}", email);
+    }
+    
+    public boolean isGoogleUserByEmail(String userEmail) {
+        return googleUserRepository.existsByUserUserEmail(userEmail);
+    }    
 }

@@ -1,4 +1,4 @@
-secret-key: ${JWT_SECRET_KEY}
-expiration-minutes: 30
-refresh-expiration-hours: 24
+secret-key: your-secret-key-here
+expiration-minutes: 60
+refresh-expiration-hours: 1
 issuer: exchange

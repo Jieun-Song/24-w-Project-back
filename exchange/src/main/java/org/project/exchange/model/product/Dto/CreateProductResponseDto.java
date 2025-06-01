@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 public class CreateProductResponseDto {
     private Long productId;
     private String name;
+    private Integer quantity;
     private Double originPrice;
     private Long listId;
     private Boolean deletedYn;
@@ -17,6 +18,7 @@ public class CreateProductResponseDto {
     public CreateProductResponseDto(Product product) {
         this.productId = product.getProductId();
         this.name = product.getName();
+        this.quantity = product.getQuantity();
         this.originPrice = product.getOriginPrice();
         this.listId = product.getLists().getListId();
         this.deletedYn = product.getDeletedYn();

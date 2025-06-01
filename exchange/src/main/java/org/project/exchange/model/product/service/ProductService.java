@@ -53,7 +53,7 @@ public class ProductService {
         }
         LocalDateTime createdAt = LocalDateTime.now();
 
-        Product product = new Product(productName, createdAt, requestDto.getOriginPrice(), lists);
+        Product product = new Product(productName, createdAt, requestDto.getQuantity(), requestDto.getOriginPrice(), lists);
         productRepository.save(product);
 
         return new CreateProductResponseDto(product);
@@ -62,7 +62,7 @@ public class ProductService {
     public ProductResponseDto update(ProductUpdateRequestDto requestDto) {
         Product product = productRepository.findById(requestDto.getProductId())
                 .orElseThrow(() -> new IllegalArgumentException("상품이 존재하지 않습니다."));
-        product.updateNameAndPrice(requestDto.getName(), requestDto.getOriginPrice());
+        product.updateNameAndPrice(requestDto.getName(), requestDto.getQuantity(), requestDto.getOriginPrice());
         productRepository.save(product);
         return new ProductResponseDto(product);
     }
@@ -86,10 +86,6 @@ public class ProductService {
         }
     }
 
-//    public void deleteByListId(Long listId) {
-//        productRepository.deleteByListId(listId);
-//    }
-
     public List<ProductWithCurrencyDto> findAll(Long userId) {
         List<Object[]> result =  productRepository.findAllByUser(userId);
 
@@ -103,7 +99,6 @@ public class ProductService {
         return productRepository.findAll();
     }
 
-    // 이미지에서 상품명과 가격만 추출
     public List<ImageProductResponseDto> analyzeImage(String base64Image) {
         String responseContent = null;
         ChatGPTRequest request = new ChatGPTRequest(model, base64Image);
