@@ -404,9 +404,18 @@ public class UserService {
             builder.userDateOfBirth(dob);
             changed = true;
         }
-        if (req.getUserPassword() != null) {
-            builder.userPassword(passwordEncoder.encode(req.getUserPassword()));
+        if (req.getCurrentPassword() != null && req.getNewPassword() != null) {
+            if (!passwordEncoder.matches(req.getCurrentPassword(), before.getUserPassword())) {
+                throw new RuntimeException("현재 비밀번호가 일치하지 않습니다.");
+            }
+            if (!isValidPassword(req.getNewPassword())) {
+                throw new RuntimeException("비밀번호 형식이 올바르지 않습니다. 비밀번호는 8자 이상 16자 이하, 문자, 숫자, 특수문자를 포함해야 합니다.");
+            }
+            builder.userPassword(passwordEncoder.encode(req.getNewPassword()));
             changed = true;
+        }else if((req.getCurrentPassword() != null && req.getNewPassword() == null) || 
+                (req.getCurrentPassword() == null && req.getNewPassword() != null)) {
+            throw new RuntimeException("비밀번호 변경을 위해서는 현재 비밀번호와 새 비밀번호를 모두 입력해야 합니다.");
         }
         if (req.getDefaultCurrencyId() != null) {
             Currency c = currencyRepository.findById(req.getDefaultCurrencyId())
