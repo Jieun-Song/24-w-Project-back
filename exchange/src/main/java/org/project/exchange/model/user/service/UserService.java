@@ -309,7 +309,6 @@ public class UserService {
             return "일치하는 사용자 정보가 없습니다.";
         }
 
-        // 임시 비밀번호 생성
         String tempPassword = generateValidRandomPassword();
         user = user.toBuilder()
                 .userPassword(passwordEncoder.encode(tempPassword))
@@ -317,7 +316,6 @@ public class UserService {
                 .build();
         userRepository.save(user);
 
-        // 임시 비밀번호 이메일 전송
         emailService.sendTemporaryPassword(userEmail, tempPassword);
 
         return "임시 비밀번호가 이메일로 전송되었습니다.";
@@ -350,7 +348,6 @@ public class UserService {
     }
 
 
-    //  랜덤 비밀번호 생성 (비밀번호 규칙 적용)
     private String generateValidRandomPassword() {
         String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
         StringBuilder password;
@@ -359,11 +356,10 @@ public class UserService {
             for (int i = 0; i < 10; i++) {
                 password.append(characters.charAt(random.nextInt(characters.length())));
             }
-        } while (!isValidPassword(password.toString())); // 규칙 만족할 때까지 반복
+        } while (!isValidPassword(password.toString())); 
         return password.toString();
     }
 
-    // 이름 재설정
     @Transactional
     public ResetNameResponse resetName(String userEmail, String newName) {
         User user = userRepository.findByUserEmail(userEmail);
@@ -454,7 +450,7 @@ public class UserService {
             throw new RuntimeException("토큰 subject 형식이 올바르지 않습니다.");
         }
 
-        String userEmail = parts[1]; // 이메일만 사용
+        String userEmail = parts[1]; 
         User user = userRepository.findByUserEmail(userEmail);
         if (user == null) {
             throw new RuntimeException("사용자를 찾을 수 없습니다.");
@@ -485,7 +481,7 @@ public class UserService {
             throw new RuntimeException("토큰 subject 형식이 올바르지 않습니다.");
         }
 
-        String userEmail = parts[1]; // 이메일만 사용
+        String userEmail = parts[1]; 
         User user = userRepository.findByUserEmail(userEmail);
         if (user == null) {
             throw new RuntimeException("사용자를 찾을 수 없습니다.");
@@ -597,7 +593,6 @@ public class UserService {
 
         User user = userRepository.findByUserEmail(email);
         if (user == null) {
-            // 기본 통화 조회 (예: 가장 먼저 등록된 것)
             Currency defaultCurrency = currencyRepository.findAll()
                     .stream()
                     .findFirst()
@@ -649,7 +644,6 @@ public class UserService {
             throw new RuntimeException("토큰에서 이메일 추출 실패", e);
         }
 
-        // 사용자·GoogleUser 조회
         User user = userRepository.findByUserEmail(email);
         if (user == null) {
             throw new RuntimeException("사용자를 찾을 수 없습니다.");
@@ -658,15 +652,13 @@ public class UserService {
         GoogleUser gu = googleUserRepository.findByUser(user)
                 .orElseThrow(() -> new RuntimeException("구글 사용자 정보가 없습니다."));
 
-        // 리프레시 토큰 강제 만료(revoke) 호출
         googleOAuthService.revokeToken(gu.getRefreshToken());
 
-        // DB에서 순차 삭제
         googleUserRepository.delete(gu);
         refreshTokenRepository.deleteById(user.getUserId());
         userRepository.delete(user);
 
-        log.info("✅ 구글 회원 탈퇴 성공: {}", email);
+        log.info("구글 회원 탈퇴 성공: {}", email);
     }
     
     public boolean isGoogleUserByEmail(String userEmail) {
