@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
@@ -25,6 +26,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     User findByUserNameAndUserDateOfBirth(String userName, LocalDate userDateOfBirth);
 
-    Optional<User> findByUserEmailAndUserNameAndUserDateOfBirth(String userEmail, String userName,
+    List<User> findAllByUserNameAndUserDateOfBirth(  String userName,
+            LocalDate userDateOfBirth);
+
+    Optional<User> findByUserEmailAndUserNameAndUserDateOfBirth(
+            String userEmail,
+            String userName,
             LocalDate userDateOfBirth);
 }
