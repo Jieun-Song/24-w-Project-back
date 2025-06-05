@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.*;
 import lombok.extern.slf4j.Slf4j; 
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -138,21 +139,19 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.createError(response.getMsg()));
     }
 
-    // 아이디 찾기 - 이름, 생년월일
     @GetMapping("/find-id")
-    public ResponseEntity<ApiResponse<?>> findId(
-            @RequestParam String userName,
-            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate userDateOfBirth) {
-
-        String userEmail = userService.findId(userName, userDateOfBirth);
-        if (userEmail != null) {
-            return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(userEmail, "아이디 찾기 성공"));
+    public ResponseEntity<?> findId(
+            @RequestParam("userName") String userName,
+            @RequestParam("userDateOfBirth") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate userDateOfBirth) {
+        try {
+            List<String> emails = userService.findId(userName, userDateOfBirth);
+            return ResponseEntity.ok(ApiResponse.createSuccessWithMessage(emails, "아이디 찾기 성공"));
+        } catch (IllegalArgumentException e) {
+            // 조회 결과가 없거나, 파라미터 검증이 실패했을 때 400으로 처리
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.createError(e.getMessage()));
         }
-
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.createError("아이디 찾기 실패"));
     }
-
     // 비밀번호 찾기 (임시 비밀번호 발급)
     @PostMapping("/find-password")
     public ResponseEntity<ApiResponse<?>> findPassword(@RequestBody FindPasswordRequest request) {

@@ -47,6 +47,7 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -291,15 +292,23 @@ public class UserService {
                 .build();
     }
 
-    // 아이디(이메일)찾기 - 이름, 생년월일로
-    @Transactional
-    public String findId(String userName, LocalDate userDateOfBirth) {
-        User user = userRepository.findByUserNameAndUserDateOfBirth(userName, userDateOfBirth);
-        if (user == null) {
-            return "일치하는 사용자 정보가 없습니다.";
+    @Transactional(readOnly = true)
+    public List<String> findId(String userName, LocalDate userDateOfBirth) {
+        // 1) 동일 조건을 가진 사용자들을 전부 조회
+        List<User> users = userRepository.findAllByUserNameAndUserDateOfBirth(userName, userDateOfBirth);
+
+        // 2) 결과가 없으면, 예외 혹은 빈 리스트로 처리
+        if (users.isEmpty()) {
+            // 예외를 던지면 Controller에서 400 BAD_REQUEST로 응답할 수 있다.
+            throw new IllegalArgumentException("일치하는 사용자 정보가 없습니다.");
         }
-        return user.getUserEmail();
+
+        // 3) 사용자 객체 목록에서 이메일만 꺼내서 List<String>으로 리턴
+        return users.stream()
+                    .map(User::getUserEmail)
+                    .collect(Collectors.toList());
     }
+
 
     // 비밀번호 찾기 (임시 비밀번호 발급)
     @Transactional
